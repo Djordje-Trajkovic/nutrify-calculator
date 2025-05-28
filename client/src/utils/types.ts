@@ -5,13 +5,38 @@ export type MenuOption = {
 }
 
 export type Meal = {
-    name: string
+    Name: string
     recipes: Recipe[]
-    kcal: number
-    protein: number
-    fat: number
-    carbohydrates: number
-    glycemicLoad: number
+    Kcal: number
+    Protein_plant?: number
+    Protein_animal?: number
+    Protein_total: number
+    Fat_saturated?: number
+    Fat_unsaturated?: number
+    Fat_total: number
+    Cholesterol?: number
+    Carbohydrates_mono?: number
+    Carbohydrates_poli?: number
+    Carbohydrates_total: number
+    Ashes?: number
+    Cellulose?: number
+    Mineral_Na?: number
+    Mineral_K?: number
+    Mineral_Ca?: number
+    Mineral_Mg?: number
+    Mineral_P?: number
+    Mineral_Fe?: number
+    Mineral_Zn?: number
+    Mineral_Cu?: number
+    Vitamin_RE?: number
+    Vitamin_B1?: number
+    Vitamin_B2?: number
+    Vitamin_B6?: number
+    Vitamin_PP?: number
+    Vitamin_C?: number
+    Vitamin_E?: number
+    Glycemic_index?: number
+    Atherogenic_index?: number
 }
 
 export type Recipe = {
@@ -58,6 +83,5 @@ export type Ingredient = {
     Vitamin_C?: number
     Vitamin_E?: number
     Glycemic_index?: number
-    Glycemic_load?: number
     Atherogenic_index?: number
 }

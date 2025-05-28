@@ -9,7 +9,6 @@ import YourNextTraining from "@/components/dashboardpage/yourNextTraining"
 import TodaysTimeline from "@/components/dashboardpage/todaysTimeline"
 import GrocerysForNextMeal from "@/components/dashboardpage/grocerysForNextMeal"
 
-
 import {
     mealsSortedByTime,
     trainingSortedByTime,
@@ -111,7 +110,6 @@ export default async function DashboardPage() {
                                     nextTrainingProp={nextTraining}
                                 />
                             </div>
-                     
                         </div>
                         <TodaysTimeline
                             todaysActivityProps={sortedActivities}
