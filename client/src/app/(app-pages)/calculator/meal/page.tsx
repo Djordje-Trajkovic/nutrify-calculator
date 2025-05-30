@@ -5,7 +5,7 @@ import SideMenu from "@/components/util/SideMenu"
 import React from "react"
 const HomePage: React.FC = () => {
     return (
-        <div className="h-full min-h-screen w-screen bg-[#FAF9F6]">
+        <div className="h-full min-h-screen bg-[#FAF9F6]">
             <SideMenu />
             <Header />
             <AppContainer>
