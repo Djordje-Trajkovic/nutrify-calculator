@@ -24,7 +24,7 @@ export type Author = {
 //const authorFetch = { id: "23", name: "Filip", image: "" }
 
 const SingleMealPlan: React.FC<SingleMealPlanProp> = ({ recipe }) => {
-    const { addMealToPlan } = useCartModalCtx()
+    const { addRecipeToPlan } = useCartModalCtx()
 
     const recomended = false
     
@@ -116,7 +116,7 @@ const SingleMealPlan: React.FC<SingleMealPlanProp> = ({ recipe }) => {
                 </div>
             </div>
             <div className="my-2 h-[1px] w-full bg-[#D9D9D9]"></div>
-            <button className="bg-LightGreen flex h-[40px] w-full items-center justify-center rounded-lg px-[24px] py-[8px] text-sm text-[#FFFFFF]" onClick={()=>addMealToPlan(recipe)}>
+            <button className="bg-LightGreen flex h-[40px] w-full items-center justify-center rounded-lg px-[24px] py-[8px] text-sm text-[#FFFFFF]" onClick={()=>addRecipeToPlan(recipe)}>
                 Add Meall +
             </button>
         </div>

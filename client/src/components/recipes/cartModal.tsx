@@ -11,27 +11,17 @@ import GeneralModalComponent from "../util/GeneralModalComponent"
 const CartModal = ({}) => {
     const {
         closeModal,
-        mealsInPlan,
-        removeMealFromPlan,
-        updateMealDate,
+        recipesInPlan,
+        removeRecipeFromPlan,
+        updateRecipeDate,
         resetCart,
     } = useCartModalCtx()
 
     const [closeModalFn, setCloseModalFn] = useState<() => void>(() => () => {})
 
-
-
-
-    console.log("mealsInPlancart", mealsInPlan)
-
-
-
-
-
-
     const handleSubmit = () => {
         // Add logic to send data, like an API request or anything else
-        console.log("Submitting data", mealsInPlan)
+        console.log("Submitting data", recipesInPlan)
         resetCart()
         closeModalFn() 
         // Example:
@@ -57,8 +47,8 @@ const CartModal = ({}) => {
                     </div>
 
                     <div className="mb-[60px] flex-grow overflow-y-auto">
-                        {mealsInPlan.length > 0 ? (
-                            mealsInPlan.map((meal, index) => (
+                        {recipesInPlan.length > 0 ? (
+                            recipesInPlan.map((recipePlan, index) => (
                                 <div
                                     key={index}
                                     className="mt-4 flex flex-col gap-4"
@@ -67,10 +57,10 @@ const CartModal = ({}) => {
                                         { "Meal Category"}
                                     </h3>
                                     <div className="relative h-[190px] w-full overflow-clip rounded-xl">
-                                        {meal.meal.Image ? (
+                                        {recipePlan.recipe.Image ? (
                                             <Image
-                                                src={typeof meal.meal.Image === "string" ? meal.meal.Image : meal.meal.Image?.url ?? ""}
-                                                alt={meal.meal.Name}
+                                                src={typeof recipePlan.recipe.Image === "string" ? recipePlan.recipe.Image : recipePlan.recipe.Image?.url ?? ""}
+                                                alt={recipePlan.recipe.Name}
                                                 fill
                                                 className="object-cover"
                                             />
@@ -84,7 +74,7 @@ const CartModal = ({}) => {
                                         )}
                                     </div>
                                     <h2 className="text-DarkGreen text-xl font-medium">
-                                        {meal.meal.Name}
+                                        {recipePlan.recipe.Name}
                                     </h2>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="flex flex-row items-center">
@@ -94,7 +84,7 @@ const CartModal = ({}) => {
                                                 containerSize={24}
                                             />
                                             <p className="ml-2 text-sm font-medium text-[#2D3748]">
-                                                {meal.meal?.TotalKcal?.toFixed(0) ??
+                                                {recipePlan.recipe?.TotalKcal?.toFixed(0) ??
                                                     0}
                                                 kcal
                                             </p>
@@ -106,7 +96,7 @@ const CartModal = ({}) => {
                                                 containerSize={24}
                                             />
                                             <p className="ml-2 text-sm font-medium text-[#2D3748]">
-                                                {meal.meal.TotalProtein?.toFixed(0) ??
+                                                {recipePlan.recipe.TotalProtein?.toFixed(0) ??
                                                     0}
                                                 g
                                             </p>
@@ -118,7 +108,7 @@ const CartModal = ({}) => {
                                                 containerSize={24}
                                             />
                                             <p className="ml-2 text-sm font-medium text-[#2D3748]">
-                                                {meal.meal?.TotalFat?.toFixed(0) ?? 0}g
+                                                {recipePlan.recipe?.TotalFat?.toFixed(0) ?? 0}g
                                             </p>
                                         </div>
                                         <div className="flex flex-row items-center">
@@ -128,7 +118,7 @@ const CartModal = ({}) => {
                                                 containerSize={24}
                                             />
                                             <p className="ml-2 text-sm font-medium text-[#2D3748]">
-                                                { meal.meal?.TotalCarbohydrates?.toFixed(0) ??  0}
+                                                { recipePlan.recipe?.TotalCarbohydrates?.toFixed(0) ??  0}
                                                 g
                                             </p>
                                         </div>
@@ -138,7 +128,7 @@ const CartModal = ({}) => {
                                         type="button"
                                         className="bg-LightGreen flex h-[40px] w-full items-center justify-center rounded-lg px-[24px] py-[8px] text-sm text-[#FFFFFF]"
                                         onClick={() =>
-                                            removeMealFromPlan(index)
+                                            removeRecipeFromPlan(index)
                                         }
                                     >
                                         Remove Meal -
@@ -147,14 +137,14 @@ const CartModal = ({}) => {
                                         type="date"
                                         className="text-DarkGreen h-[40px] w-full rounded-lg border-none bg-[#EEEBDA] px-4 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-[#EEEBDA] focus:outline-none"
                                         value={
-                                            meal.dateWhenPlanned
-                                                ? meal.dateWhenPlanned
+                                            recipePlan.dateWhenPlanned
+                                                ? recipePlan.dateWhenPlanned
                                                       .toISOString()
                                                       .split("T")[0]
                                                 : ""
                                         }
                                         onChange={(e) =>
-                                            updateMealDate(
+                                            updateRecipeDate(
                                                 index,
                                                 new Date(e.target.value),
                                             )
@@ -165,7 +155,7 @@ const CartModal = ({}) => {
                         ) : (
                             <div>No meals in cart</div>
                         )}
-                        {mealsInPlan.length !== 0 && (
+                        {recipesInPlan.length !== 0 && (
                             <button
                                 type="button"
                                 className="bg-LightGreen w-max-fit absolute right-[24px] bottom-[24px] left-[24px] h-[40px] rounded-lg text-sm text-white"
