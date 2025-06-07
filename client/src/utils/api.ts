@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import qs from "qs"
 import {
     Blog,
     CategoryCondition,
@@ -14,6 +15,7 @@ import {
     MedicalFoodRecipe,
     MedicalFoodMenu,
 } from "./types"
+import { calculatreRecipeParametars } from "./calculateRecipeParametars"
 
 const BASE_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
 const BLOGS_ENDPOINT = `${BASE_URL}/blogs`
@@ -30,9 +32,9 @@ const MFR_ENDPOINT = `${BASE_URL}/medical-food-recipes`
 const MFM_ENDPOINT = `${BASE_URL}/medical-food-menus`
 
 // Headers
-const getHeaders = () => ({
+const getHeaders = (token?: string | null) => ({
     "Content-Type": "application/json",
-    // "Authorization": `Bearer ${yourToken}`
+    ...(token && { Authorization: `Bearer ${token}` }),
 })
 
 // Flatten helpers
@@ -827,6 +829,27 @@ const POPULATERecipe = encodeURIComponent(`
   category_cuisine_types
 `)
 
+const query = qs.stringify(
+    {
+        populate: {
+            Ingredients: {
+                populate: "*",
+            },
+            Image: true,
+            category_meal_courses: {
+                populate: "*",
+            },
+        },
+
+        category_macro_nutrients: true,
+        category_food_groups: true,
+        category_cuisine_types: true,
+    },
+    {
+        encodeValuesOnly: true, // bitno za Strapi da ne kodira [ ] karaktere
+    },
+)
+
 // Get recipe by ID
 export async function getRecipeById(id: number): Promise<Recipe | null> {
     const res = await fetch(
@@ -868,37 +891,104 @@ export async function getRecipeById(id: number): Promise<Recipe | null> {
     return recipe
 }
 
-// Get all recipes
-export async function getAllRecipes(): Promise<Recipe[]> {
-    const res = await fetch(`${RECIPE_ENDPOINT}?populate=${POPULATERecipe}`)
-    const json = await res.json()
+export async function getAllOrSearchByNameRecipes(
+    token: string,
+    nameFilter?: string,
+): Promise<Recipe[]> {
+    const queryParams = new URLSearchParams()
 
-    return (json.data || []).map((data: any) => ({
-        id: data.id,
-        ...data,
-        Ingredients: (data.Ingredients || []).map((ri: any) => ({
-            ...ri,
-            Ingredient: ri.Ingredient
-                ? {
-                      id: ri.Ingredient.id,
-                      ...ri.Ingredient,
-                  }
-                : null,
-        })),
-        category_meal_courses: flattenRelationArray(
-            data.category_meal_courses?.data || [],
-        ),
-        category_macro_nutrients: flattenRelationArray(
-            data.category_macro_nutrients?.data || [],
-        ),
-        category_food_groups: flattenRelationArray(
-            data.category_food_groups?.data || [],
-        ),
-        category_cuisine_types: flattenRelationArray(
-            data.category_cuisine_types?.data || [],
-        ),
-        Image: flattenMedia(data.Image?.data),
-    }))
+    if (nameFilter) {
+        queryParams.append("filters[Name][$containsi]", nameFilter)
+    }
+
+    const res = await fetch(
+        `${RECIPE_ENDPOINT}?${queryParams.toString()}&${query}`,
+        {
+            headers: getHeaders(token),
+        },
+    )
+    const json = await res.json()
+    const data = Array.isArray(json.data) ? json.data : []
+
+    const recipes: Recipe[] = data.map((item: any) => {
+        const ingredients: Ingredient[] = (item.Ingredients || []).map(
+            (ing: any) => {
+                const ingData = ing.ingredient
+
+                return {
+                    Name: ingData.Name,
+                    Code: ingData.Code,
+                    Amount: ing.Amount,
+                    Kcal: ingData.Kcal,
+                    Protein_plant: ingData.Protein_plant,
+                    Protein_animal: ingData.Protein_animal,
+                    Protein_total: ingData.Protein_total,
+                    Fat_saturated: ingData.Fat_saturated,
+                    Fat_unsaturated: ingData.Fat_unsaturated,
+                    Fat_total: ingData.Fat_total,
+                    Cholesterol: ingData.Cholesterol,
+                    Carbohydrates_mono: ingData.Carbohydrates_mono,
+                    Carbohydrates_poli: ingData.Carbohydrates_poli,
+                    Carbohydrates_total: ingData.Carbohydrates_total,
+                    Ashes: ingData.Ashes,
+                    Cellulose: ingData.Cellulose,
+                    Mineral_Na: ingData.Mineral_Na,
+                    Mineral_K: ingData.Mineral_K,
+                    Mineral_Ca: ingData.Mineral_Ca,
+                    Mineral_Mg: ingData.Mineral_Mg,
+                    Mineral_P: ingData.Mineral_P,
+                    Mineral_Fe: ingData.Mineral_Fe,
+                    Mineral_Zn: ingData.Mineral_Zn,
+                    Mineral_Cu: ingData.Mineral_Cu,
+                    Vitamin_RE: ingData.Vitamin_RE,
+                    Vitamin_B1: ingData.Vitamin_B1,
+                    Vitamin_B2: ingData.Vitamin_B2,
+                    Vitamin_B6: ingData.Vitamin_B6,
+                    Vitamin_PP: ingData.Vitamin_PP,
+                    Vitamin_C: ingData.Vitamin_C,
+                    Vitamin_E: ingData.Vitamin_E,
+                    Glycemic_index: ingData.Glycemic_index,
+                    Glycemic_load: ingData.Glycemic_load,
+                }
+            },
+        )
+
+        const totalRecipeParametars = calculatreRecipeParametars({
+            Name: item?.Name ?? "",
+            Code: item?.Code ?? "",
+            Ingredients: ingredients,
+        })
+
+        //console.log(item, "item server api")
+
+        return {
+            id: item.id,
+            Name: item.Name,
+            Ingredients: ingredients,
+            TotalKcal: totalRecipeParametars.kcal,
+            TotalProtein: totalRecipeParametars.protein,
+            TotalFat: totalRecipeParametars.fat,
+            TotalCarbohydrates: totalRecipeParametars.carbohydrates,
+            TotalGlycemicLoad: totalRecipeParametars.carbohydrates,
+            preparation: item.attributes?.Preparation ?? undefined,
+            Short_description: item.Short_description,
+            category_meal_courses: flattenRelationArray(
+                item.attributes?.category_meal_courses || [],
+            ),
+            category_macro_nutrients: flattenRelationArray(
+                item.attributes?.category_macro_nutrients || [],
+            ),
+            category_food_groups: flattenRelationArray(
+                item.attributes?.category_food_groups || [],
+            ),
+            category_cuisine_types: flattenRelationArray(
+                item.attributes?.category_cuisine_types || [],
+            ),
+            Image: flattenMedia(item?.Image?.data),
+        }
+    })
+
+    return recipes
 }
 
 // MEDICAL FOOD RECIPES ENDPOINTS
