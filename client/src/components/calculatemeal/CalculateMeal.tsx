@@ -5,7 +5,6 @@ import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple } from "@phosphor-icons/react"
 import { searchRecipesByName } from "@/utils/api"
-import { ca } from "date-fns/locale"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -96,8 +95,8 @@ const CalculateMeal: React.FC = () => {
         },
     ])
     const [mealPlanName, setMealPlanName] = useState("")
-    const [open, setOpen] = useState(false)
-    const [chosenMeal, setChosenMeal] = useState<Meal | null>(null)
+    // const [open, setOpen] = useState(false)
+    // const [chosenMeal, setChosenMeal] = useState<Meal | null>(null)
     const [planCalories, setPlanCalories] = useState(1800)
 
     const handleIngredientSearch = async (
@@ -1155,10 +1154,10 @@ const CalculateMeal: React.FC = () => {
                             >
                                 <div className="flex w-full justify-between">
                                     <h3
-                                        onClick={() => {
-                                            setOpen(true)
-                                            setChosenMeal(meal)
-                                        }}
+                                        // onClick={() => {
+                                        //     setOpen(true)
+                                        //     setChosenMeal(meal)
+                                        // }}
                                         className="text-DarkGreen font-Poppins flex shrink-0 items-center pr-4 text-2xl"
                                     >
                                         {mealName[index] ?? meal.Name}
