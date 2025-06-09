@@ -5,18 +5,19 @@ import { Recipe } from "@/utils/types"
 
 type mealPlaned = 
 {
-  meal:Recipe
+  recipe:Recipe
   dateWhenPlanned: Date
 }
+
 type CartModalContextType = {
     cartModalIsOpen: boolean
     //selectedMeal: Meal | null
     openModal: () => void
     closeModal: () => void
-    mealsInPlan: mealPlaned[]
-    addMealToPlan: (meal: Recipe) => void
-    removeMealFromPlan: (mealId:  number)=> void
-    updateMealDate: (index: number, newDate: Date) => void
+    recipesInPlan: mealPlaned[]
+    addRecipeToPlan: (recipe: Recipe) => void
+    removeRecipeFromPlan: (mealId:  number)=> void
+    updateRecipeDate: (index: number, newDate: Date) => void
     resetCart: () => void
     openSearchModal: () => void
     closeSearchModal: () => void
@@ -30,7 +31,7 @@ const CartModalContext = createContext<CartModalContextType | undefined>(undefin
 export const CartModalProvider = ({ children }: { children: React.ReactNode }) => {
     const [cartModalIsOpen, setCartModalIsOpen] = useState(false)
     //const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null)
-    const [mealsInPlan, setMealsInPlan] = useState<mealPlaned[]>([])
+    const [recipesInPlan, setRecipesInPlan] = useState<mealPlaned[]>([])
 
     const [searchModalIsOpen, setSearchModalIsOpen] = useState(false)
 
@@ -54,20 +55,20 @@ export const CartModalProvider = ({ children }: { children: React.ReactNode }) =
     }
 
     const resetCart = () => {
-      setMealsInPlan([])
+      setRecipesInPlan([])
     }
 
-    const addMealToPlan =(meal:Recipe)=>{
-      setMealsInPlan((prev)=> [...prev, { meal, dateWhenPlanned: new Date() }])
+    const addRecipeToPlan =(recipe:Recipe)=>{
+      setRecipesInPlan((prev)=> [...prev, { recipe, dateWhenPlanned: new Date() }])
     }
-    const removeMealFromPlan = (indexToRemove: number) => {
-      setMealsInPlan((prev) =>
+    const removeRecipeFromPlan = (indexToRemove: number) => {
+      setRecipesInPlan((prev) =>
         prev.filter((_, index) => index !== indexToRemove)
       )
     }
 
-    const updateMealDate = (index: number, newDate: Date) => {
-      setMealsInPlan((prev) => {
+    const updateRecipeDate = (index: number, newDate: Date) => {
+      setRecipesInPlan((prev) => {
         const updated = [...prev]
         updated[index] = { ...updated[index], dateWhenPlanned: newDate }
         return updated
@@ -75,7 +76,7 @@ export const CartModalProvider = ({ children }: { children: React.ReactNode }) =
     }
 
     return (
-        <CartModalContext.Provider value={{ cartModalIsOpen,  openModal, closeModal, mealsInPlan,resetCart, addMealToPlan, removeMealFromPlan, updateMealDate, openSearchModal, closeSearchModal, searchModalIsOpen, searchTerm, handleSearchTermChange }}>
+        <CartModalContext.Provider value={{ cartModalIsOpen,  openModal, closeModal, recipesInPlan,resetCart, addRecipeToPlan, removeRecipeFromPlan, updateRecipeDate, openSearchModal, closeSearchModal, searchModalIsOpen, searchTerm, handleSearchTermChange }}>
             {children}
         </CartModalContext.Provider>
     )

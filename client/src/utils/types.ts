@@ -224,6 +224,11 @@ export interface Recipe {
     createdAt?: string
     updatedAt?: string
     publishedAt?: string
+    TotalKcal?: number
+    TotalProtein?: number
+    TotalFat?: number
+    TotalCarbohydrates?: number
+    TotalGlycemicLoad?: number
 }
 
 // MedicalFoodRecipe

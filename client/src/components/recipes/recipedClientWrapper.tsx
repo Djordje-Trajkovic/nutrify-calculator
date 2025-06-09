@@ -8,9 +8,12 @@ import SingleMealPlan from "./singleMealPlan"
 import SingleWeaklyPlan from "./singleWeaklyPlan"
 import { useCartModal as useCartModalCtx } from "./cartModalCtx"
 import CartModal from "./cartModal"
-import { fetchData } from "@/utils/fetchData"
 import RecipesLoader from "../skeletonLoaders/recipesLoader"
 import SearchModal from "./searchModal"
+import { toast } from "react-toastify"
+import Cookies from "js-cookie"
+import { getAllOrSearchByNameRecipes } from "@/utils/api"
+import { Recipe } from "@/utils/types"
 
 const fetchedRecipes = [
     {
@@ -202,20 +205,49 @@ const RecipesClientWrapper = () => {
 
 
 
-    const [recipes, setRecipes] = useState([])
+
+
+    const [recipes, setRecipes] = useState<Recipe[]>([])
     //const [weaklyPlan, setWeaklyPlan] = useState([])
 
     useEffect(() => {
         const getData = async () => {
             setLoading(true)
 
-            const query = searchTerm ? `/recipes?filters[Name][$contains]=${searchTerm}&populate[Ingredients][populate]=*` : "/recipes?populate[Ingredients][populate]=*"
-            const data = await fetchData(
-                `${query}`,
-            )
-            if (data) {
-                setRecipes(data.data)
-            }
+            try{
+                const token = Cookies.get("jwtNutrifyS")
+
+
+                if (!token){
+                    toast.error("You are not authenticated.")
+                    return
+                }
+
+                
+                const data = await getAllOrSearchByNameRecipes(token, searchTerm)
+
+
+                toast.success("Data fetched successfully.")
+
+                setRecipes(data)
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }catch (error: unknown | any) {
+        console.error(error)
+
+        if (error.response?.status === 403) {
+            toast.error("Access forbidden. You might not have permission.")
+        } else if (error.response?.status === 401) {
+            toast.error("Unauthorized. Please log in again.")
+        } else {
+            toast.error("Failed to fetch data.")
+        }
+
+        setRecipes([])//kako app neb krashovao
+    }
+
+            
+
             setLoading(false)
 
         }
