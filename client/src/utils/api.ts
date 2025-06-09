@@ -705,14 +705,8 @@ export const searchRecipesByName = async (
     token: string,
 ): Promise<Recipe[]> => {
     if (searchValue.length <= 2) return []
-
-    const query = new URLSearchParams({
-        "filters.Name[$containsi]": searchValue,
-        "populate.Ingredients.populate": "ingredient",
-    })
-
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_STRAPI_URL}/recipes?${query.toString()}`,
+        `${process.env.NEXT_PUBLIC_STRAPI_URL}/recipes?filters[Name][$contains]=${searchValue}&populate[Ingredients][populate]=*`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -724,94 +718,53 @@ export const searchRecipesByName = async (
     const json = await response.json()
     const data = json.data ?? []
 
-    const recipes: Recipe[] = data.map((item: any) => {
-        const ingredients: Ingredient[] = (item.Ingredients || []).map(
-            (ing: any) => {
-                const ingData = ing.ingredient?.data || {}
-                return {
-                    Name: ingData.Name,
-                    Code: ingData.Code,
-                    Amount: ing.Amount,
-                    Kcal: ingData.Kcal,
-                    Protein_plant: ingData.Protein_plant,
-                    Protein_animal: ingData.Protein_animal,
-                    Protein_total: ingData.Protein_total,
-                    Fat_saturated: ingData.Fat_saturated,
-                    Fat_unsaturated: ingData.Fat_unsaturated,
-                    Fat_total: ingData.Fat_total,
-                    Cholesterol: ingData.Cholesterol,
-                    Carbohydrates_mono: ingData.Carbohydrates_mono,
-                    Carbohydrates_poli: ingData.Carbohydrates_poli,
-                    Carbohydrates_total: ingData.Carbohydrates_total,
-                    Ashes: ingData.Ashes,
-                    Cellulose: ingData.Cellulose,
-                    Mineral_Na: ingData.Mineral_Na,
-                    Mineral_K: ingData.Mineral_K,
-                    Mineral_Ca: ingData.Mineral_Ca,
-                    Mineral_Mg: ingData.Mineral_Mg,
-                    Mineral_P: ingData.Mineral_P,
-                    Mineral_Fe: ingData.Mineral_Fe,
-                    Mineral_Zn: ingData.Mineral_Zn,
-                    Mineral_Cu: ingData.Mineral_Cu,
-                    Vitamin_RE: ingData.Vitamin_RE,
-                    Vitamin_B1: ingData.Vitamin_B1,
-                    Vitamin_B2: ingData.Vitamin_B2,
-                    Vitamin_B6: ingData.Vitamin_B6,
-                    Vitamin_PP: ingData.Vitamin_PP,
-                    Vitamin_C: ingData.Vitamin_C,
-                    Vitamin_E: ingData.Vitamin_E,
-                    Glycemic_index: ingData.Glycemic_index,
-                    Glycemic_load: ingData.Glycemic_load,
-                }
-            },
-        )
+    console.log("searchRecipesByName", data)
 
-        // Calculate totals
-        const totalKcal = ingredients.reduce(
-            (sum, ing) => sum + (ing.Kcal ?? 0) * ((ing.Amount ?? 0) / 100),
-            0,
-        )
-        const totalProtein = ingredients.reduce(
-            (sum, ing) =>
-                sum +
-                ((ing.Protein_plant ?? 0) + (ing.Protein_animal ?? 0)) *
-                    ((ing.Amount ?? 0) / 100),
-            0,
-        )
-        const totalFat = ingredients.reduce(
-            (sum, ing) =>
-                sum + (ing.Fat_total ?? 0) * ((ing.Amount ?? 0) / 100),
-            0,
-        )
-        const totalCarbs = ingredients.reduce(
-            (sum, ing) =>
-                sum +
-                (ing.Carbohydrates_total ?? 0) * ((ing.Amount ?? 0) / 100),
-            0,
-        )
-        const totalGlycemicLoad = ingredients.reduce((sum, ing) => {
-            if (ing.Glycemic_index != null) {
-                return (
-                    sum +
-                    (ing.Glycemic_index *
-                        (ing.Carbohydrates_total ?? 0) *
-                        (ing.Amount ?? 0)) /
-                        10000
-                )
+    const recipes: Recipe[] = data.map((item: any) => {
+        const ingredients: Ingredient[] = item.Ingredients.map((ing: any) => {
+            return {
+                Name: ing.ingredient.Name,
+                id: ing.id,
+                Code: ing.ingredient.Code,
+                Amount: ing.Amount,
+                Kcal: ing.ingredient.Kcal,
+                Protein_plant: ing.ingredient.Protein_plant,
+                Protein_animal: ing.ingredient.Protein_animal,
+                Protein_total: ing.ingredient.Protein_total,
+                Fat_saturated: ing.ingredient.Fat_saturated,
+                Fat_unsaturated: ing.ingredient.Fat_unsaturated,
+                Fat_total: ing.ingredient.Fat_total,
+                Cholesterol: ing.ingredient.Cholesterol,
+                Carbohydrates_mono: ing.ingredient.Carbohydrates_mono,
+                Carbohydrates_poli: ing.ingredient.Carbohydrates_poli,
+                Carbohydrates_total: ing.ingredient.Carbohydrates_total,
+                Ashes: ing.ingredient.Ashes,
+                Cellulose: ing.ingredient.Cellulose,
+                Mineral_Na: ing.ingredient.Mineral_Na,
+                Mineral_K: ing.ingredient.Mineral_K,
+                Mineral_Ca: ing.ingredient.Mineral_Ca,
+                Mineral_Mg: ing.ingredient.Mineral_Mg,
+                Mineral_P: ing.ingredient.Mineral_P,
+                Mineral_Fe: ing.ingredient.Mineral_Fe,
+                Mineral_Zn: ing.ingredient.Mineral_Zn,
+                Mineral_Cu: ing.ingredient.Mineral_Cu,
+                Vitamin_RE: ing.ingredient.Vitamin_RE,
+                Vitamin_B1: ing.ingredient.Vitamin_B1,
+                Vitamin_B2: ing.ingredient.Vitamin_B2,
+                Vitamin_B6: ing.ingredient.Vitamin_B6,
+                Vitamin_PP: ing.ingredient.Vitamin_PP,
+                Vitamin_C: ing.ingredient.Vitamin_C,
+                Vitamin_E: ing.ingredient.Vitamin_E,
+                Glycemic_index: ing.ingredient.Glycemic_index,
             }
-            return sum
-        }, 0)
+        })
 
         return {
             Name: item.Name,
             Ingredients: ingredients,
-            kcal: totalKcal,
-            protein: totalProtein,
-            fat: totalFat,
-            carbohydrates: totalCarbs,
-            glycemicLoad: totalGlycemicLoad,
-            preparation: item.Preparation ?? undefined,
-        }
+            Code: item.Code,
+            id: item.id,
+        } as Recipe
     })
 
     return recipes

@@ -34,6 +34,10 @@ export interface AdminApiToken extends Struct.CollectionTypeSchema {
         minLength: 1;
       }> &
       Schema.Attribute.DefaultTo<''>;
+    encryptedKey: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 1;
+      }>;
     expiresAt: Schema.Attribute.DateTime;
     lastUsedAt: Schema.Attribute.DateTime;
     lifespan: Schema.Attribute.BigInteger;
@@ -618,19 +622,45 @@ export interface ApiIngredientIngredient extends Struct.CollectionTypeSchema {
     Amount: Schema.Attribute.Integer;
     Ashes: Schema.Attribute.Decimal;
     Atherogenic_index: Schema.Attribute.Decimal;
+    Carbohydrates_fructose: Schema.Attribute.Decimal;
+    Carbohydrates_glucose: Schema.Attribute.Decimal;
+    Carbohydrates_isomaltulose: Schema.Attribute.Decimal;
+    Carbohydrates_lactose: Schema.Attribute.Decimal;
+    Carbohydrates_maltose: Schema.Attribute.Decimal;
     Carbohydrates_mono: Schema.Attribute.Decimal;
+    Carbohydrates_Noncaloric_Carbohydrates: Schema.Attribute.Decimal;
+    Carbohydrates_Organic_Acids: Schema.Attribute.Decimal;
     Carbohydrates_poli: Schema.Attribute.Decimal;
+    Carbohydrates_Polyols: Schema.Attribute.Decimal;
+    Carbohydrates_sucrose: Schema.Attribute.Decimal;
     Carbohydrates_total: Schema.Attribute.Decimal;
+    Carotenoids: Schema.Attribute.Decimal;
     Cellulose: Schema.Attribute.Decimal;
     Cholesterol: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     Code: Schema.Attribute.String & Schema.Attribute.Unique;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    Fat_aa: Schema.Attribute.Decimal;
+    Fat_ala: Schema.Attribute.Decimal;
+    Fat_Arachidonic_Acid: Schema.Attribute.Decimal;
+    Fat_dha: Schema.Attribute.Decimal;
+    Fat_epa: Schema.Attribute.Decimal;
+    Fat_la: Schema.Attribute.Decimal;
+    Fat_mct: Schema.Attribute.Decimal;
     Fat_saturated: Schema.Attribute.Decimal;
     Fat_total: Schema.Attribute.Decimal;
-    Fat_unsaturated: Schema.Attribute.Decimal & Schema.Attribute.Private;
-    Fiber: Schema.Attribute.Decimal;
+    Fat_unsaturated: Schema.Attribute.Decimal;
+    Fatty_Acids_C10: Schema.Attribute.Decimal;
+    Fatty_Acids_C12: Schema.Attribute.Decimal;
+    Fatty_Acids_C14: Schema.Attribute.Decimal;
+    Fatty_Acids_C6: Schema.Attribute.Decimal;
+    Fatty_Acids_C8: Schema.Attribute.Decimal;
+    Fiber_Fructooligosaccharides: Schema.Attribute.Decimal;
+    Fiber_Galactooligosaccharides: Schema.Attribute.Decimal;
+    Fiber_Insoluble: Schema.Attribute.Decimal;
+    Fiber_Soluble: Schema.Attribute.Decimal;
+    Fiber_total: Schema.Attribute.Decimal;
     Glycemic_index: Schema.Attribute.Decimal;
     Ingredient_Image: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
@@ -642,28 +672,60 @@ export interface ApiIngredientIngredient extends Struct.CollectionTypeSchema {
       'api::ingredient.ingredient'
     > &
       Schema.Attribute.Private;
+    MCT_TCM_ratio: Schema.Attribute.Decimal;
     Mineral_Ca: Schema.Attribute.Float;
+    Mineral_Cl: Schema.Attribute.Decimal;
+    Mineral_Cr: Schema.Attribute.Decimal;
     Mineral_Cu: Schema.Attribute.Float;
+    Mineral_F: Schema.Attribute.Decimal;
     Mineral_Fe: Schema.Attribute.Float;
+    Mineral_Jod: Schema.Attribute.Decimal;
     Mineral_K: Schema.Attribute.Float;
     Mineral_Mg: Schema.Attribute.Decimal;
+    Mineral_Mn: Schema.Attribute.Decimal;
+    Mineral_Mo: Schema.Attribute.Decimal;
     Mineral_Na: Schema.Attribute.Float;
     Mineral_P: Schema.Attribute.Float;
+    Mineral_S: Schema.Attribute.Decimal;
+    Mineral_Se: Schema.Attribute.Decimal;
     Mineral_Zn: Schema.Attribute.Float;
     Name: Schema.Attribute.String & Schema.Attribute.Unique;
+    Nucleotides: Schema.Attribute.Decimal;
+    Omega3_Omega6_ratio: Schema.Attribute.Decimal;
+    Osmolality: Schema.Attribute.Decimal;
+    Osmolarity: Schema.Attribute.Decimal;
+    Phosphates: Schema.Attribute.Decimal;
     Protein_animal: Schema.Attribute.Decimal;
+    Protein_Carnitine: Schema.Attribute.Decimal;
+    Protein_Casein: Schema.Attribute.Decimal;
+    Protein_equivalent: Schema.Attribute.Decimal;
+    Protein_Essential_Amino_Acids: Schema.Attribute.Decimal;
+    Protein_L_Arginin: Schema.Attribute.Decimal;
+    Protein_L_Carnitine: Schema.Attribute.Decimal;
+    Protein_L_Leucin: Schema.Attribute.Decimal;
     Protein_plant: Schema.Attribute.Decimal;
+    Protein_taurine: Schema.Attribute.Decimal;
     Protein_total: Schema.Attribute.Decimal;
+    Protein_Whey: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
+    Sugars: Schema.Attribute.Decimal;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     Vitamin_B1: Schema.Attribute.Float;
+    Vitamin_B12: Schema.Attribute.Decimal;
     Vitamin_B2: Schema.Attribute.Float;
+    Vitamin_B3: Schema.Attribute.Float;
+    Vitamin_B4_Holin: Schema.Attribute.Decimal;
+    Vitamin_B5: Schema.Attribute.Decimal;
     Vitamin_B6: Schema.Attribute.Float;
+    Vitamin_B7: Schema.Attribute.Decimal;
+    Vitamin_B8_Inositol: Schema.Attribute.Decimal;
+    Vitamin_B9_Folic_Acid: Schema.Attribute.Decimal;
     Vitamin_C: Schema.Attribute.Float;
+    Vitamin_D: Schema.Attribute.Decimal;
     Vitamin_E: Schema.Attribute.Float;
-    Vitamin_PP: Schema.Attribute.Float;
+    Vitamin_K: Schema.Attribute.Decimal;
     Vitamin_RE: Schema.Attribute.Float;
     Volume_per_Unit: Schema.Attribute.Decimal;
     Water: Schema.Attribute.Decimal;

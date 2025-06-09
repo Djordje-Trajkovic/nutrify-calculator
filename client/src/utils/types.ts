@@ -8,40 +8,106 @@ export type MenuOption = {
     path: string
 }
 
+export type NutritionalFields = {
+    Amount?: number
+    Ashes?: number
+    Atherogenic_index?: number
+    Carbohydrates_fructose?: number
+    Carbohydrates_glucose?: number
+    Carbohydrates_isomaltulose?: number
+    Carbohydrates_lactose?: number
+    Carbohydrates_maltose?: number
+    Carbohydrates_mono?: number
+    Carbohydrates_Noncaloric_Carbohydrates?: number
+    Carbohydrates_Organic_Acids?: number
+    Carbohydrates_poli?: number
+    Carbohydrates_Polyols?: number
+    Carbohydrates_sucrose?: number
+    Carbohydrates_total?: number
+    Carotenoids?: number
+    Cellulose?: number
+    Cholesterol?: number
+    Fat_aa?: number
+    Fat_ala?: number
+    Fat_Arachidonic_Acid?: number
+    Fat_dha?: number
+    Fat_epa?: number
+    Fat_la?: number
+    Fat_mct?: number
+    Fat_saturated?: number
+    Fat_total?: number
+    Fat_unsaturated?: number
+    Fatty_Acids_C10?: number
+    Fatty_Acids_C12?: number
+    Fatty_Acids_C14?: number
+    Fatty_Acids_C6?: number
+    Fatty_Acids_C8?: number
+    Fiber_Fructooligosaccharides?: number
+    Fiber_Galactooligosaccharides?: number
+    Fiber_Insoluble?: number
+    Fiber_Soluble?: number
+    Fiber_total?: number
+    Glycemic_index?: number
+    Kcal?: number
+    MCT_TCM_ratio?: number
+    Mineral_Ca?: number
+    Mineral_Cl?: number
+    Mineral_Cr?: number
+    Mineral_Cu?: number
+    Mineral_F?: number
+    Mineral_Fe?: number
+    Mineral_Jod?: number
+    Mineral_K?: number
+    Mineral_Mg?: number
+    Mineral_Mn?: number
+    Mineral_Mo?: number
+    Mineral_Na?: number
+    Mineral_P?: number
+    Mineral_S?: number
+    Mineral_Se?: number
+    Mineral_Zn?: number
+    Nucleotides?: number
+    Omega3_Omega6_ratio?: number
+    Osmolality?: number
+    Osmolarity?: number
+    Phosphates?: number
+    Protein_animal?: number
+    Protein_Carnitine?: number
+    Protein_Casein?: number
+    Protein_Essential_Amino_Acids?: number
+    Protein_L_Arginin?: number
+    Protein_L_Leucin?: number
+    Protein_plant?: number
+    Protein_taurine?: number
+    Protein_total?: number
+    Protein_Whey?: number
+    Sugars?: number
+    Vitamin_A?: number
+    Vitamin_B1?: number
+    Vitamin_B12?: number
+    Vitamin_B2?: number
+    Vitamin_B3?: number
+    Vitamin_B4_Holin?: number
+    Vitamin_B5?: number
+    Vitamin_B6?: number
+    Vitamin_B7?: number
+    Vitamin_B8_Inositol?: number
+    Vitamin_B9_Folic_Acid?: number
+    Vitamin_C?: number
+    Vitamin_D?: number
+    Vitamin_E?: number
+    Vitamin_K?: number
+    Vitamin_PP?: number
+    Vitamin_RE?: number
+    Volume_per_Unit?: number
+    Water?: number
+}
+
 export type Meal = {
     Name: string
     Recipes: Recipe[]
-    Kcal: number
-    Protein_total: number
-    Protein_plant: number
-    Protein_animal: number
-    Fat_total: number
-    Fat_saturated: number
-    Fat_unsaturated: number
-    Carbohydrates_total: number
-    Carbohydrates_mono: number
-    Carbohydrates_poli: number
-    Cholesterol: number
-    Ashes: number
-    Cellulose: number
-    Mineral_Na: number
-    Mineral_K: number
-    Mineral_Ca: number
-    Mineral_Mg: number
-    Mineral_P: number
-    Mineral_Fe: number
-    Mineral_Zn: number
-    Mineral_Cu: number
-    Vitamin_RE: number
-    Vitamin_B1: number
-    Vitamin_B2: number
-    Vitamin_B6: number
-    Vitamin_PP: number
-    Vitamin_C: number
-    Vitamin_E: number
-    Glycemic_index: number
-    Atherogenic_index: number
-}
+    Glycemic_load?: number
+} & NutritionalFields
 
 // Blog
 export interface Blog {
@@ -114,55 +180,18 @@ export interface Dietetic {
 }
 
 // Ingredient
-export interface Ingredient {
-    id?: number
+export type Ingredient = {
     Name?: string
     Code?: string
-    Amount?: number
-    Water?: number
-    Kcal?: number
-    Protein_plant?: number
-    Protein_animal?: number
-    Protein_total?: number
-    Fat_saturated?: number
-    Fat_unsaturated?: number
-    Fat_total?: number
-    Cholesterol?: number
-    Carbohydrates_mono?: number
-    Carbohydrates_poli?: number
-    Carbohydrates_total?: number
-    Ashes?: number
-    Cellulose?: number
-    Mineral_Na?: number
-    Mineral_K?: number
-    Mineral_Ca?: number
-    Mineral_Mg?: number
-    Mineral_P?: number
-    Mineral_Fe?: number
-    Mineral_Zn?: number
-    Mineral_Cu?: number
-    Vitamin_RE?: number
-    Vitamin_B1?: number
-    Vitamin_B2?: number
-    Vitamin_B6?: number
-    Vitamin_PP?: number
-    Vitamin_C?: number
-    Vitamin_E?: number
-    Glycemic_index?: number
-    Atherogenic_index?: number
-    Fiber?: number
-    Volume_per_Unit?: number
-    Ingredient_Image?: {
-        id: number
-        url: string
-        name: string
-        mime: string
-        size: number
-    } | null
+    Ingredient_Image?: any
     createdAt?: string
     updatedAt?: string
     publishedAt?: string
-}
+    locale?: string
+    localizations?: any
+    createdBy?: any
+    updatedBy?: any
+} & NutritionalFields
 
 // Media
 export interface Media {

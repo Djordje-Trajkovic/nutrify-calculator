@@ -10,6 +10,7 @@
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {},
   "attributes": {
     "Name": {
       "type": "string",
@@ -41,6 +42,33 @@
       "type": "decimal",
       "required": false
     },
+    "Protein_Whey": {
+      "type": "decimal"
+    },
+    "Protein_Carnitine": {
+      "type": "decimal"
+    },
+    "Protein_L_Carnitine": {
+      "type": "decimal"
+    },
+    "Protein_taurine": {
+      "type": "decimal"
+    },
+    "Protein_Essential_Amino_Acids": {
+      "type": "decimal"
+    },
+    "Protein_Casein": {
+      "type": "decimal"
+    },
+    "Protein_L_Arginin": {
+      "type": "decimal"
+    },
+    "Protein_L_Leucin": {
+      "type": "decimal"
+    },
+    "Protein_equivalent": {
+      "type": "decimal"
+    },
     "Protein_total": {
       "type": "decimal",
       "required": false
@@ -50,8 +78,25 @@
       "required": false
     },
     "Fat_unsaturated": {
-      "type": "decimal",
-      "private": true
+      "type": "decimal"
+    },
+    "Fat_la": {
+      "type": "decimal"
+    },
+    "Fat_aa": {
+      "type": "decimal"
+    },
+    "Fat_ala": {
+      "type": "decimal"
+    },
+    "Fat_dha": {
+      "type": "decimal"
+    },
+    "Fat_mct": {
+      "type": "decimal"
+    },
+    "Fat_epa": {
+      "type": "decimal"
     },
     "Fat_total": {
       "type": "decimal",
@@ -72,6 +117,48 @@
       "type": "decimal",
       "required": false
     },
+    "Carbohydrates_glucose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_fructose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_lactose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_maltose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_isomaltulose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_sucrose": {
+      "type": "decimal"
+    },
+    "Carbohydrates_Polyols": {
+      "type": "decimal"
+    },
+    "Carbohydrates_Noncaloric_Carbohydrates": {
+      "type": "decimal"
+    },
+    "Fiber_Soluble": {
+      "type": "decimal"
+    },
+    "Fiber_Insoluble": {
+      "type": "decimal"
+    },
+    "Fiber_Galactooligosaccharides": {
+      "type": "decimal"
+    },
+    "Fiber_Fructooligosaccharides": {
+      "type": "decimal"
+    },
+    "Fiber_total": {
+      "type": "decimal"
+    },
+    "Sugars": {
+      "type": "decimal"
+    },
     "Ashes": {
       "type": "decimal",
       "required": false
@@ -84,13 +171,25 @@
       "type": "float",
       "required": false
     },
+    "Mineral_Mn": {
+      "type": "decimal"
+    },
     "Mineral_K": {
       "type": "float"
     },
     "Mineral_Ca": {
       "type": "float"
     },
+    "Mineral_Cr": {
+      "type": "decimal"
+    },
+    "Mineral_Cl": {
+      "type": "decimal"
+    },
     "Mineral_Mg": {
+      "type": "decimal"
+    },
+    "Mineral_Mo": {
       "type": "decimal"
     },
     "Mineral_P": {
@@ -98,6 +197,18 @@
     },
     "Mineral_Fe": {
       "type": "float"
+    },
+    "Mineral_Jod": {
+      "type": "decimal"
+    },
+    "Mineral_S": {
+      "type": "decimal"
+    },
+    "Mineral_Se": {
+      "type": "decimal"
+    },
+    "Mineral_F": {
+      "type": "decimal"
     },
     "Mineral_Zn": {
       "type": "float"
@@ -114,22 +225,61 @@
     "Vitamin_B2": {
       "type": "float"
     },
+    "Vitamin_B4_Holin": {
+      "type": "decimal"
+    },
+    "Vitamin_B5": {
+      "type": "decimal"
+    },
     "Vitamin_B6": {
       "type": "float"
     },
-    "Vitamin_PP": {
-      "type": "float"
+    "Vitamin_B7": {
+      "type": "decimal"
+    },
+    "Vitamin_B8_Inositol": {
+      "type": "decimal"
+    },
+    "Vitamin_B9_Folic_Acid": {
+      "type": "decimal"
+    },
+    "Vitamin_B12": {
+      "type": "decimal"
     },
     "Vitamin_C": {
       "type": "float"
     },
+    "Vitamin_D": {
+      "type": "decimal"
+    },
     "Vitamin_E": {
+      "type": "float"
+    },
+    "Vitamin_K": {
+      "type": "decimal"
+    },
+    "Vitamin_B3": {
       "type": "float"
     },
     "Glycemic_index": {
       "type": "decimal"
     },
     "Atherogenic_index": {
+      "type": "decimal"
+    },
+    "Volume_per_Unit": {
+      "type": "decimal"
+    },
+    "Osmolarity": {
+      "type": "decimal"
+    },
+    "Osmolality": {
+      "type": "decimal"
+    },
+    "Phosphates": {
+      "type": "decimal"
+    },
+    "Carotenoids": {
       "type": "decimal"
     },
     "Ingredient_Image": {
@@ -143,10 +293,34 @@
         "audios"
       ]
     },
-    "Fiber": {
+    "Fat_Arachidonic_Acid": {
       "type": "decimal"
     },
-    "Volume_per_Unit": {
+    "Carbohydrates_Organic_Acids": {
+      "type": "decimal"
+    },
+    "Nucleotides": {
+      "type": "decimal"
+    },
+    "Fatty_Acids_C6": {
+      "type": "decimal"
+    },
+    "Fatty_Acids_C8": {
+      "type": "decimal"
+    },
+    "Fatty_Acids_C10": {
+      "type": "decimal"
+    },
+    "Fatty_Acids_C12": {
+      "type": "decimal"
+    },
+    "Fatty_Acids_C14": {
+      "type": "decimal"
+    },
+    "Omega3_Omega6_ratio": {
+      "type": "decimal"
+    },
+    "MCT_TCM_ratio": {
       "type": "decimal"
     }
   }

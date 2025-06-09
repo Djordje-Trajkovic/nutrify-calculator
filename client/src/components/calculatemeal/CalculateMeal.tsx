@@ -1,10 +1,11 @@
 "use client"
-import { Ingredient, Meal, Recipe } from "@/utils/types"
-import { Autocomplete, Button, Input, Stack, TextField } from "@mui/material"
+import { Ingredient, Meal, NutritionalFields, Recipe } from "@/utils/types"
+import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple } from "@phosphor-icons/react"
-import CustomModal from "../util/CustomModal"
+import { searchRecipesByName } from "@/utils/api"
+import { ca } from "date-fns/locale"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -19,15 +20,10 @@ const CalculateMeal: React.FC = () => {
     const [meals, setMeals] = useState<Meal[]>([
         {
             Name: "Meal #1",
-            recipes: [
+            Recipes: [
                 {
                     Name: "",
-                    carbohydrates: 0,
-                    fat: 0,
-                    glycemicLoad: 0,
-                    kcal: 0,
-                    protein: 0,
-                    preparation: "",
+                    Code: "",
                     Ingredients: [
                         {
                             Name: "",
@@ -102,6 +98,7 @@ const CalculateMeal: React.FC = () => {
     const [mealPlanName, setMealPlanName] = useState("")
     const [open, setOpen] = useState(false)
     const [chosenMeal, setChosenMeal] = useState<Meal | null>(null)
+    const [planCalories, setPlanCalories] = useState(1800)
 
     const handleIngredientSearch = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -131,106 +128,13 @@ const CalculateMeal: React.FC = () => {
         setSearchRecipes(null)
 
         if (searchValue.length > 2) {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_STRAPI_URL}/recipes?filters[Name][$contains]=${searchValue}&populate[Ingredients][populate]=*`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    cache: "no-store",
-                },
-            )
-            const data = await res.json()
-            console.log("Data from search:", data)
-            const recipes: Recipe[] = data.data.map((item: Recipe) => {
-                const ingredients: Ingredient[] = item.Ingredients.map(
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (ing: any) => {
-                        const ingData = ing.ingredient
-                        return {
-                            Name: ingData.Name,
-                            Code: ingData.Code,
-                            Amount: ing.Amount,
-                            Kcal: ingData.Kcal,
-                            Protein_plant: ingData.Protein_plant,
-                            Protein_animal: ingData.Protein_animal,
-                            Protein_total: ingData.Protein_total,
-                            Fat_saturated: ingData.Fat_saturated,
-                            Fat_unsaturated: ingData.Fat_unsaturated,
-                            Fat_total: ingData.Fat_total,
-                            Cholesterol: ingData.Cholesterol,
-                            Carbohydrates_mono: ingData.Carbohydrates_mono,
-                            Carbohydrates_poli: ingData.Carbohydrates_poli,
-                            Carbohydrates_total: ingData.Carbohydrates_total,
-                            Ashes: ingData.Ashes,
-                            Cellulose: ingData.Cellulose,
-                            Mineral_Na: ingData.Mineral_Na,
-                            Mineral_K: ingData.Mineral_K,
-                            Mineral_Ca: ingData.Mineral_Ca,
-                            Mineral_Mg: ingData.Mineral_Mg,
-                            Mineral_P: ingData.Mineral_P,
-                            Mineral_Fe: ingData.Mineral_Fe,
-                            Mineral_Zn: ingData.Mineral_Zn,
-                            Mineral_Cu: ingData.Mineral_Cu,
-                            Vitamin_RE: ingData.Vitamin_RE,
-                            Vitamin_B1: ingData.Vitamin_B1,
-                            Vitamin_B2: ingData.Vitamin_B2,
-                            Vitamin_B6: ingData.Vitamin_B6,
-                            Vitamin_PP: ingData.Vitamin_PP,
-                            Vitamin_C: ingData.Vitamin_C,
-                            Vitamin_E: ingData.Vitamin_E,
-                            Glycemic_index: ingData.Glycemic_index,
-                            Glycemic_load: ingData.Glycemic_load,
-                            Atherogenic_index: ingData.Atherogenic_index,
-                        }
-                    },
-                )
-
-                const totalKcal = ingredients.reduce(
-                    (sum, ing) =>
-                        sum + (ing.Kcal ?? 0) * ((ing.Amount ?? 0) / 100),
-                    0,
-                )
-                const totalProtein = ingredients.reduce(
-                    (sum, ing) =>
-                        sum +
-                        ((ing.Protein_plant ?? 0) + (ing.Protein_animal ?? 0)) *
-                            ((ing.Amount ?? 0) / 100),
-                    0,
-                )
-                const totalFat = ingredients.reduce(
-                    (sum, ing) =>
-                        sum + (ing.Fat_total ?? 0) * ((ing.Amount ?? 0) / 100),
-                    0,
-                )
-                const totalCarbs = ingredients.reduce(
-                    (sum, ing) =>
-                        sum +
-                        (ing.Carbohydrates_total ?? 0) *
-                            ((ing.Amount ?? 0) / 100),
-                    0,
-                )
-
-                const totalGlycemicLoad = ingredients.reduce((sum, ing) => {
-                    if (ing.Glycemic_index != null) {
-                        return (
-                            sum +
-                            (ing.Glycemic_index *
-                                (ing.Carbohydrates_total ?? 0) *
-                                (ing.Amount ?? 0)) /
-                                10000
-                        )
-                    }
-                    return sum
-                }, 0)
-
+            const result = await searchRecipesByName(searchValue, token!)
+            console.log("Data from search:", result)
+            const recipes = result.map((recipe: Recipe) => {
                 return {
-                    Name: item.Name,
-                    Ingredients: ingredients,
-                    kcal: totalKcal,
-                    protein: totalProtein,
-                    fat: totalFat,
-                    carbohydrates: totalCarbs,
-                    glycemicLoad: totalGlycemicLoad,
-                    preparation: item.preparation ?? undefined,
+                    Name: recipe.Name,
+                    Ingredients: recipe.Ingredients,
+                    Code: recipe.Code,
                 }
             })
 
@@ -243,9 +147,10 @@ const CalculateMeal: React.FC = () => {
         setMeals((prev) => {
             const newMeals = [...prev]
             const targetMeal = { ...newMeals[mealIndex] }
-            const newRecipes = [...(targetMeal.recipes ?? [])]
+            const newRecipes = [...(targetMeal.Recipes ?? [])]
             const newRecipe: Recipe = {
                 Name: `Recipe #${newRecipes.length + 1}`,
+                Code: "",
                 Ingredients: [
                     {
                         Name: "",
@@ -254,14 +159,9 @@ const CalculateMeal: React.FC = () => {
                         Kcal: 0,
                     },
                 ],
-                kcal: 0,
-                protein: 0,
-                fat: 0,
-                carbohydrates: 0,
-                glycemicLoad: 0,
             }
             newRecipes.push(newRecipe)
-            targetMeal.recipes = newRecipes
+            targetMeal.Recipes = newRecipes
             newMeals[mealIndex] = targetMeal
 
             return newMeals
@@ -271,10 +171,13 @@ const CalculateMeal: React.FC = () => {
         setMeals((prev) => {
             const newMeals = [...prev]
             const targetMeal = { ...newMeals[mealIndex] }
-            const newRecipes = [...(targetMeal.recipes ?? [])]
+            const newRecipes = [...(targetMeal.Recipes ?? [])]
             newRecipes.splice(recIndex, 1)
-            targetMeal.recipes = newRecipes
-            newMeals[mealIndex] = targetMeal
+            targetMeal.Recipes = newRecipes
+
+            // Recalculate the meal nutrition after removing recipe
+            const recalculatedMeal = calculateMealNutrition(targetMeal)
+            newMeals[mealIndex] = recalculatedMeal
 
             return newMeals
         })
@@ -284,9 +187,10 @@ const CalculateMeal: React.FC = () => {
             ...prev,
             {
                 Name: `Meal #${prev.length + 1}`,
-                recipes: [
+                Recipes: [
                     {
                         Name: "Recipe #1",
+                        Code: "",
                         Ingredients: [
                             {
                                 Name: "",
@@ -295,11 +199,6 @@ const CalculateMeal: React.FC = () => {
                                 Kcal: 0,
                             },
                         ],
-                        kcal: 0,
-                        protein: 0,
-                        fat: 0,
-                        carbohydrates: 0,
-                        glycemicLoad: 0,
                     },
                 ],
                 Kcal: 0,
@@ -337,7 +236,7 @@ const CalculateMeal: React.FC = () => {
     }
     const handleAddNewIngredient = (mealIndex: number, recIndex: number) => {
         const newMeals = [...meals]
-        newMeals[mealIndex].recipes[recIndex].Ingredients.push({
+        newMeals[mealIndex].Recipes[recIndex].Ingredients.push({
             Name: "",
             Code: "",
             Amount: 100,
@@ -353,7 +252,7 @@ const CalculateMeal: React.FC = () => {
         setMeals((prevMeals) => {
             const updatedMeals = [...prevMeals]
             const updatedMeal = { ...updatedMeals[mealIndex] }
-            const updatedRecipes = [...updatedMeal.recipes]
+            const updatedRecipes = [...updatedMeal.Recipes]
             const updatedRecipe = { ...updatedRecipes[recIndex] }
             const updatedIngredients = [...updatedRecipe.Ingredients]
 
@@ -361,7 +260,7 @@ const CalculateMeal: React.FC = () => {
 
             updatedRecipe.Ingredients = updatedIngredients
             updatedRecipes[recIndex] = updatedRecipe
-            updatedMeal.recipes = updatedRecipes
+            updatedMeal.Recipes = updatedRecipes
 
             const recalculatedMeal = calculateMealNutrition(updatedMeal)
 
@@ -371,7 +270,10 @@ const CalculateMeal: React.FC = () => {
         })
     }
     const calculateMealNutrition = (meal: Meal): Meal => {
-        const nutritionTotals = {
+        const nutritionTotals: Meal = {
+            Name: meal.Name,
+            Recipes: meal.Recipes,
+            Glycemic_load: 0,
             Kcal: 0,
             Protein_total: 0,
             Protein_plant: 0,
@@ -400,71 +302,137 @@ const CalculateMeal: React.FC = () => {
             Vitamin_PP: 0,
             Vitamin_C: 0,
             Vitamin_E: 0,
-            Glycemic_index: 0,
             Atherogenic_index: 0,
+            // Optional fields from NutritionalFields, initialized to 0 or undefined
+            Amount: 0,
+            Carbohydrates_fructose: 0,
+            Carbohydrates_glucose: 0,
+            Carbohydrates_isomaltulose: 0,
+            Carbohydrates_lactose: 0,
+            Carbohydrates_maltose: 0,
+            Carbohydrates_Noncaloric_Carbohydrates: 0,
+            Carbohydrates_Organic_Acids: 0,
+            Carbohydrates_Polyols: 0,
+            Carbohydrates_sucrose: 0,
+            Carotenoids: 0,
+            Fat_aa: 0,
+            Fat_ala: 0,
+            Fat_Arachidonic_Acid: 0,
+            Fat_dha: 0,
+            Fat_epa: 0,
+            Fat_la: 0,
+            Fat_mct: 0,
+            Fatty_Acids_C10: 0,
+            Fatty_Acids_C12: 0,
+            Fatty_Acids_C14: 0,
+            Fatty_Acids_C6: 0,
+            Fatty_Acids_C8: 0,
+            Fiber_Fructooligosaccharides: 0,
+            Fiber_Galactooligosaccharides: 0,
+            Fiber_Insoluble: 0,
+            Fiber_Soluble: 0,
+            Fiber_total: 0,
+            Glycemic_index: 0,
+            MCT_TCM_ratio: 0,
+            Mineral_Cl: 0,
+            Mineral_Cr: 0,
+            Mineral_F: 0,
+            Mineral_Jod: 0,
+            Mineral_Mn: 0,
+            Mineral_Mo: 0,
+            Mineral_S: 0,
+            Mineral_Se: 0,
+            Nucleotides: 0,
+            Omega3_Omega6_ratio: 0,
+            Osmolality: 0,
+            Osmolarity: 0,
+            Phosphates: 0,
+            Protein_Carnitine: 0,
+            Protein_Casein: 0,
+            Protein_Essential_Amino_Acids: 0,
+            Protein_L_Arginin: 0,
+            Protein_L_Leucin: 0,
+            Protein_taurine: 0,
+            Protein_Whey: 0,
+            Sugars: 0,
+            Vitamin_A: 0,
+            Vitamin_B12: 0,
+            Vitamin_B3: 0,
+            Vitamin_B4_Holin: 0,
+            Vitamin_B5: 0,
+            Vitamin_B7: 0,
+            Vitamin_B8_Inositol: 0,
+            Vitamin_B9_Folic_Acid: 0,
+            Vitamin_D: 0,
+            Vitamin_K: 0,
+            Volume_per_Unit: 0,
+            Water: 0,
         }
 
         let totalCarbsForGlycemicIndex = 0
         let weightedGlycemicIndex = 0
 
-        for (const recipe of meal.recipes) {
+        for (const recipe of meal.Recipes) {
             for (const ingredient of recipe.Ingredients) {
                 const amount = ingredient.Amount ?? 0
                 const factor = amount / 100
 
-                nutritionTotals.Kcal += (ingredient.Kcal ?? 0) * factor
-                nutritionTotals.Protein_total +=
+                nutritionTotals.Amount! += amount
+                nutritionTotals.Water! += (ingredient.Water ?? 0) * factor
+
+                nutritionTotals.Kcal! += (ingredient.Kcal ?? 0) * factor
+                nutritionTotals.Protein_total! +=
                     (ingredient.Protein_total ?? 0) * factor
-                nutritionTotals.Protein_plant +=
+                nutritionTotals.Protein_plant! +=
                     (ingredient.Protein_plant ?? 0) * factor
-                nutritionTotals.Protein_animal +=
+                nutritionTotals.Protein_animal! +=
                     (ingredient.Protein_animal ?? 0) * factor
-                nutritionTotals.Fat_total +=
+                nutritionTotals.Fat_total! +=
                     (ingredient.Fat_total ?? 0) * factor
-                nutritionTotals.Fat_saturated +=
+                nutritionTotals.Fat_saturated! +=
                     (ingredient.Fat_saturated ?? 0) * factor
-                nutritionTotals.Fat_unsaturated +=
+                nutritionTotals.Fat_unsaturated! +=
                     (ingredient.Fat_unsaturated ?? 0) * factor
-                nutritionTotals.Carbohydrates_total +=
+                nutritionTotals.Carbohydrates_total! +=
                     (ingredient.Carbohydrates_total ?? 0) * factor
-                nutritionTotals.Carbohydrates_mono +=
+                nutritionTotals.Carbohydrates_mono! +=
                     (ingredient.Carbohydrates_mono ?? 0) * factor
-                nutritionTotals.Carbohydrates_poli +=
+                nutritionTotals.Carbohydrates_poli! +=
                     (ingredient.Carbohydrates_poli ?? 0) * factor
-                nutritionTotals.Cholesterol +=
+                nutritionTotals.Cholesterol! +=
                     (ingredient.Cholesterol ?? 0) * factor
-                nutritionTotals.Ashes += (ingredient.Ashes ?? 0) * factor
-                nutritionTotals.Cellulose +=
+                nutritionTotals.Ashes! += (ingredient.Ashes ?? 0) * factor
+                nutritionTotals.Cellulose! +=
                     (ingredient.Cellulose ?? 0) * factor
-                nutritionTotals.Mineral_Na +=
+                nutritionTotals.Mineral_Na! +=
                     (ingredient.Mineral_Na ?? 0) * factor
-                nutritionTotals.Mineral_K +=
+                nutritionTotals.Mineral_K! +=
                     (ingredient.Mineral_K ?? 0) * factor
-                nutritionTotals.Mineral_Ca +=
+                nutritionTotals.Mineral_Ca! +=
                     (ingredient.Mineral_Ca ?? 0) * factor
-                nutritionTotals.Mineral_Mg +=
+                nutritionTotals.Mineral_Mg! +=
                     (ingredient.Mineral_Mg ?? 0) * factor
-                nutritionTotals.Mineral_P +=
+                nutritionTotals.Mineral_P! +=
                     (ingredient.Mineral_P ?? 0) * factor
-                nutritionTotals.Mineral_Fe +=
+                nutritionTotals.Mineral_Fe! +=
                     (ingredient.Mineral_Fe ?? 0) * factor
-                nutritionTotals.Mineral_Zn +=
+                nutritionTotals.Mineral_Zn! +=
                     (ingredient.Mineral_Zn ?? 0) * factor
-                nutritionTotals.Mineral_Cu +=
+                nutritionTotals.Mineral_Cu! +=
                     (ingredient.Mineral_Cu ?? 0) * factor
-                nutritionTotals.Vitamin_RE +=
+                nutritionTotals.Vitamin_RE! +=
                     (ingredient.Vitamin_RE ?? 0) * factor
-                nutritionTotals.Vitamin_B1 +=
+                nutritionTotals.Vitamin_B1! +=
                     (ingredient.Vitamin_B1 ?? 0) * factor
-                nutritionTotals.Vitamin_B2 +=
+                nutritionTotals.Vitamin_B2! +=
                     (ingredient.Vitamin_B2 ?? 0) * factor
-                nutritionTotals.Vitamin_B6 +=
+                nutritionTotals.Vitamin_B6! +=
                     (ingredient.Vitamin_B6 ?? 0) * factor
-                nutritionTotals.Vitamin_PP +=
+                nutritionTotals.Vitamin_PP! +=
                     (ingredient.Vitamin_PP ?? 0) * factor
-                nutritionTotals.Vitamin_C +=
+                nutritionTotals.Vitamin_C! +=
                     (ingredient.Vitamin_C ?? 0) * factor
-                nutritionTotals.Vitamin_E +=
+                nutritionTotals.Vitamin_E! +=
                     (ingredient.Vitamin_E ?? 0) * factor
 
                 const carbsInIngredient =
@@ -474,7 +442,7 @@ const CalculateMeal: React.FC = () => {
                         carbsInIngredient * (ingredient.Glycemic_index ?? 0)
                     totalCarbsForGlycemicIndex += carbsInIngredient
                 }
-                nutritionTotals.Atherogenic_index +=
+                nutritionTotals.Atherogenic_index! +=
                     (ingredient.Atherogenic_index ?? 0) * factor
             }
         }
@@ -488,7 +456,11 @@ const CalculateMeal: React.FC = () => {
         }
     }
     const calculateTotalNutrition = () => {
-        const totals = {
+        type MealTotals = {
+            Glycemic_load?: number
+        } & NutritionalFields
+
+        const totals: MealTotals = {
             Kcal: 0,
             Protein_total: 0,
             Protein_plant: 0,
@@ -519,41 +491,83 @@ const CalculateMeal: React.FC = () => {
             Vitamin_E: 0,
             Glycemic_index: 0,
             Atherogenic_index: 0,
+            Glycemic_load: 0,
+            // All additional NutritionalFields fields, initialized to 0
+            Amount: 0,
+            Carbohydrates_fructose: 0,
+            Carbohydrates_glucose: 0,
+            Carbohydrates_isomaltulose: 0,
+            Carbohydrates_lactose: 0,
+            Carbohydrates_maltose: 0,
+            Carbohydrates_Noncaloric_Carbohydrates: 0,
+            Carbohydrates_Organic_Acids: 0,
+            Carbohydrates_Polyols: 0,
+            Carbohydrates_sucrose: 0,
+            Carotenoids: 0,
+            Fat_aa: 0,
+            Fat_ala: 0,
+            Fat_Arachidonic_Acid: 0,
+            Fat_dha: 0,
+            Fat_epa: 0,
+            Fat_la: 0,
+            Fat_mct: 0,
+            Fatty_Acids_C10: 0,
+            Fatty_Acids_C12: 0,
+            Fatty_Acids_C14: 0,
+            Fatty_Acids_C6: 0,
+            Fatty_Acids_C8: 0,
+            Fiber_Fructooligosaccharides: 0,
+            Fiber_Galactooligosaccharides: 0,
+            Fiber_Insoluble: 0,
+            Fiber_Soluble: 0,
+            Fiber_total: 0,
+            MCT_TCM_ratio: 0,
+            Mineral_Cl: 0,
+            Mineral_Cr: 0,
+            Mineral_F: 0,
+            Mineral_Jod: 0,
+            Mineral_Mn: 0,
+            Mineral_Mo: 0,
+            Mineral_S: 0,
+            Mineral_Se: 0,
+            Nucleotides: 0,
+            Omega3_Omega6_ratio: 0,
+            Osmolality: 0,
+            Osmolarity: 0,
+            Phosphates: 0,
+            Protein_Carnitine: 0,
+            Protein_Casein: 0,
+            Protein_Essential_Amino_Acids: 0,
+            Protein_L_Arginin: 0,
+            Protein_L_Leucin: 0,
+            Protein_taurine: 0,
+            Protein_Whey: 0,
+            Sugars: 0,
+            Vitamin_A: 0,
+            Vitamin_B12: 0,
+            Vitamin_B3: 0,
+            Vitamin_B4_Holin: 0,
+            Vitamin_B5: 0,
+            Vitamin_B7: 0,
+            Vitamin_B8_Inositol: 0,
+            Vitamin_B9_Folic_Acid: 0,
+            Vitamin_D: 0,
+            Vitamin_K: 0,
+            Volume_per_Unit: 0,
+            Water: 0,
         }
 
         let totalCarbsForGlycemicIndex = 0
         let weightedGlycemicIndex = 0
 
         for (const meal of meals) {
-            totals.Kcal += meal.Kcal ?? 0
-            totals.Protein_total += meal.Protein_total ?? 0
-            totals.Protein_plant += meal.Protein_plant ?? 0
-            totals.Protein_animal += meal.Protein_animal ?? 0
-            totals.Fat_total += meal.Fat_total ?? 0
-            totals.Fat_saturated += meal.Fat_saturated ?? 0
-            totals.Fat_unsaturated += meal.Fat_unsaturated ?? 0
-            totals.Carbohydrates_total += meal.Carbohydrates_total ?? 0
-            totals.Carbohydrates_mono += meal.Carbohydrates_mono ?? 0
-            totals.Carbohydrates_poli += meal.Carbohydrates_poli ?? 0
-            totals.Cholesterol += meal.Cholesterol ?? 0
-            totals.Ashes += meal.Ashes ?? 0
-            totals.Cellulose += meal.Cellulose ?? 0
-            totals.Mineral_Na += meal.Mineral_Na ?? 0
-            totals.Mineral_K += meal.Mineral_K ?? 0
-            totals.Mineral_Ca += meal.Mineral_Ca ?? 0
-            totals.Mineral_Mg += meal.Mineral_Mg ?? 0
-            totals.Mineral_P += meal.Mineral_P ?? 0
-            totals.Mineral_Fe += meal.Mineral_Fe ?? 0
-            totals.Mineral_Zn += meal.Mineral_Zn ?? 0
-            totals.Mineral_Cu += meal.Mineral_Cu ?? 0
-            totals.Vitamin_RE += meal.Vitamin_RE ?? 0
-            totals.Vitamin_B1 += meal.Vitamin_B1 ?? 0
-            totals.Vitamin_B2 += meal.Vitamin_B2 ?? 0
-            totals.Vitamin_B6 += meal.Vitamin_B6 ?? 0
-            totals.Vitamin_PP += meal.Vitamin_PP ?? 0
-            totals.Vitamin_C += meal.Vitamin_C ?? 0
-            totals.Vitamin_E += meal.Vitamin_E ?? 0
-            totals.Atherogenic_index += meal.Atherogenic_index ?? 0
+            // Sum all fields in NutritionalFields, handling possibly undefined
+            for (const key in totals) {
+                if (Object.prototype.hasOwnProperty.call(totals, key)) {
+                    // @ts-expect-error Possibly undefined fields
+                    totals[key] += meal[key] ?? 0
+                }
+            }
 
             // For weighted glycemic index calculation
             const mealCarbs = meal.Carbohydrates_total ?? 0
@@ -569,31 +583,19 @@ const CalculateMeal: React.FC = () => {
                 weightedGlycemicIndex / totalCarbsForGlycemicIndex
         }
 
+        // Calculate glycemic load
+        totals.Glycemic_load =
+            (totals.Carbohydrates_total ?? 0) *
+            ((totals.Glycemic_index ?? 0) / 100)
+
+        totals.Water = meals.reduce((sum, meal) => sum + (meal.Water ?? 0), 0)
+        totals.Amount = meals.reduce((sum, meal) => sum + (meal.Amount ?? 0), 0)
+
         return totals
     }
 
     return (
         <>
-            <CustomModal
-                open={open}
-                title={chosenMeal?.Name ?? ""}
-                type="info"
-                onClose={() => {
-                    setOpen(false)
-                }}
-                content={
-                    <div className="flex flex-col gap-5">
-                        {chosenMeal?.recipes.map((recipe, index) => (
-                            <div key={index} className="flex flex-col gap-2">
-                                <h2 className="text-DarkGreen font-Poppins text-3xl">
-                                    {recipe.Name}
-                                </h2>
-                                <p>{recipe.preparation}</p>
-                            </div>
-                        ))}
-                    </div>
-                }
-            />
             <div className="w-full pt-30 pb-10">
                 <div className="flex w-full justify-between gap-4 pb-10">
                     <div className="flex gap-10">
@@ -611,14 +613,23 @@ const CalculateMeal: React.FC = () => {
                         </Button>
                     </div>
                     <div className="flex gap-10">
-                        <Input
-                            placeholder="Meal Plan Name"
+                        <TextField
+                            label="Total Calories"
+                            placeholder="Set Meal Plan Calories"
                             className="w-full max-w-[300px] bg-white px-5"
-                            slotProps={{
-                                input: {
-                                    type: "search",
-                                },
+                            onChange={(e) => {
+                                if (e.target.value === "") {
+                                    setPlanCalories(0)
+                                    return
+                                }
+                                setPlanCalories(parseInt(e.target.value))
                             }}
+                            value={planCalories}
+                        />
+                        <TextField
+                            label="Meal Plan Name"
+                            placeholder="Write name"
+                            className="w-full max-w-[300px] bg-white px-5"
                             onChange={(e) => {
                                 setMealPlanName(e.target.value)
                             }}
@@ -635,8 +646,8 @@ const CalculateMeal: React.FC = () => {
                         </Button>
                     </div>
                 </div>
-                <div className="flex w-full gap-[10%]">
-                    <div className="flex min-w-1/3 flex-col gap-10">
+                <div className="flex w-full gap-10">
+                    <div className="flex w-full max-w-1/3 flex-col gap-10">
                         <form className="text-DarkGreen flex flex-col gap-10">
                             {meals.map((meal, index) => (
                                 <div
@@ -762,7 +773,7 @@ const CalculateMeal: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    {meal.recipes.map((recipe, recIndex) => (
+                                    {meal.Recipes.map((recipe, recIndex) => (
                                         <div
                                             key={recIndex + recipe.Name}
                                             className="flex w-full flex-col gap-3"
@@ -782,7 +793,8 @@ const CalculateMeal: React.FC = () => {
                                                             typeof option ===
                                                             "string"
                                                                 ? option
-                                                                : option.Name
+                                                                : option.Name ||
+                                                                  ""
                                                         }
                                                         onChange={(
                                                             event,
@@ -807,7 +819,7 @@ const CalculateMeal: React.FC = () => {
                                                                                     return meal
 
                                                                                 const updatedRecipes =
-                                                                                    meal.recipes.map(
+                                                                                    meal.Recipes.map(
                                                                                         (
                                                                                             r,
                                                                                             rIdx,
@@ -823,24 +835,6 @@ const CalculateMeal: React.FC = () => {
                                                                                                 Ingredients:
                                                                                                     value.Ingredients ??
                                                                                                     [],
-                                                                                                kcal:
-                                                                                                    value.kcal ??
-                                                                                                    0,
-                                                                                                protein:
-                                                                                                    value.protein ??
-                                                                                                    0,
-                                                                                                fat:
-                                                                                                    value.fat ??
-                                                                                                    0,
-                                                                                                carbohydrates:
-                                                                                                    value.carbohydrates ??
-                                                                                                    0,
-                                                                                                glycemicLoad:
-                                                                                                    value.glycemicLoad ??
-                                                                                                    0,
-                                                                                                preparation:
-                                                                                                    value.preparation ??
-                                                                                                    "",
                                                                                                 Name:
                                                                                                     value.Name ??
                                                                                                     "Recipe",
@@ -851,7 +845,7 @@ const CalculateMeal: React.FC = () => {
                                                                                 const updatedMeal: Meal =
                                                                                     {
                                                                                         ...meal,
-                                                                                        recipes:
+                                                                                        Recipes:
                                                                                             updatedRecipes,
                                                                                     }
 
@@ -905,7 +899,7 @@ const CalculateMeal: React.FC = () => {
                                                                                         ]
                                                                                     newMeals[
                                                                                         index
-                                                                                    ].recipes[
+                                                                                    ].Recipes[
                                                                                         recIndex
                                                                                     ].Name =
                                                                                         inputValue
@@ -921,7 +915,7 @@ const CalculateMeal: React.FC = () => {
                                                                         },
                                                                     }}
                                                                 />
-                                                                {meal.recipes
+                                                                {meal.Recipes
                                                                     .length >
                                                                     1 && (
                                                                     <Button
@@ -974,7 +968,8 @@ const CalculateMeal: React.FC = () => {
                                                                         typeof option ===
                                                                         "string"
                                                                             ? option
-                                                                            : option.Name
+                                                                            : option.Name ||
+                                                                              ""
                                                                     }
                                                                     onChange={(
                                                                         event,
@@ -995,7 +990,7 @@ const CalculateMeal: React.FC = () => {
                                                                                         ]
                                                                                     newMeals[
                                                                                         index
-                                                                                    ].recipes[
+                                                                                    ].Recipes[
                                                                                         recIndex
                                                                                     ].Ingredients[
                                                                                         ingIndex
@@ -1067,7 +1062,7 @@ const CalculateMeal: React.FC = () => {
                                                                                 ]
                                                                             newMeals[
                                                                                 index
-                                                                            ].recipes[
+                                                                            ].Recipes[
                                                                                 recIndex
                                                                             ].Ingredients[
                                                                                 ingIndex
@@ -1088,7 +1083,16 @@ const CalculateMeal: React.FC = () => {
                                                                 slotProps={{
                                                                     input: {
                                                                         type: "number",
-                                                                        value: ingredient.Amount,
+                                                                        value: meals[
+                                                                            index
+                                                                        ]
+                                                                            .Recipes[
+                                                                            recIndex
+                                                                        ]
+                                                                            .Ingredients[
+                                                                            ingIndex
+                                                                        ]
+                                                                            .Amount,
                                                                         onFocus:
                                                                             (
                                                                                 e,
@@ -1140,14 +1144,14 @@ const CalculateMeal: React.FC = () => {
                             ))}
                         </form>
                     </div>
-                    <div className="flex flex-col gap-3">
+                    <div className="flex w-full min-w-2/3 flex-col gap-3">
                         <h1 className="text-DarkGreen font-Poppins pb-5 text-4xl">
                             Result
                         </h1>
                         {meals.map((meal, index: number) => (
                             <div
                                 key={meal.Name + index}
-                                className="flex w-full flex-col"
+                                className="flex w-full flex-col gap-1"
                             >
                                 <div className="flex w-full justify-between">
                                     <h3
@@ -1155,16 +1159,49 @@ const CalculateMeal: React.FC = () => {
                                             setOpen(true)
                                             setChosenMeal(meal)
                                         }}
-                                        className="text-DarkGreen font-Poppins flex items-center pr-4 text-2xl"
+                                        className="text-DarkGreen font-Poppins flex shrink-0 items-center pr-4 text-2xl"
                                     >
                                         {mealName[index] ?? meal.Name}
                                     </h3>
-                                    <div className="flex max-w-[80%] gap-3">
+                                    <div className="flex gap-3 overflow-x-scroll py-2">
+                                        <TextField
+                                            disabled
+                                            label="Amount"
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={
+                                                calculateMealNutrition(meal)
+                                                    .Amount + "g"
+                                            }
+                                        />
+                                        <TextField
+                                            disabled
+                                            label="Water"
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={
+                                                meal.Water && meal.Water > 0
+                                                    ? meal.Water + "ml"
+                                                    : "-"
+                                            }
+                                        />
+                                        <TextField
+                                            disabled
+                                            label="Meal Kcal %"
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={
+                                                planCalories > 0 && meal.Kcal
+                                                    ? (
+                                                          ((meal.Kcal ?? 0) /
+                                                              planCalories) *
+                                                          100
+                                                      ).toFixed(1) + "%"
+                                                    : "0%"
+                                            }
+                                        />
                                         <TextField
                                             disabled
                                             label="Calories"
-                                            className="max-w-[120px]!"
-                                            value={meal.Kcal.toFixed(4)}
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={(meal.Kcal ?? 0).toFixed(4)}
                                             slotProps={{
                                                 input: {
                                                     type: "number",
@@ -1174,10 +1211,10 @@ const CalculateMeal: React.FC = () => {
                                         <TextField
                                             disabled
                                             label="Protein"
-                                            className="max-w-[120px]!"
-                                            value={meal.Protein_total.toFixed(
-                                                4,
-                                            )}
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={(
+                                                meal.Protein_total ?? 0
+                                            ).toFixed(4)}
                                             slotProps={{
                                                 input: {
                                                     type: "number",
@@ -1187,8 +1224,10 @@ const CalculateMeal: React.FC = () => {
                                         <TextField
                                             disabled
                                             label="Fat"
-                                            className="max-w-[120px]!"
-                                            value={meal.Fat_total.toFixed(4)}
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={(
+                                                meal.Fat_total ?? 0
+                                            ).toFixed(4)}
                                             slotProps={{
                                                 input: {
                                                     type: "number",
@@ -1198,108 +1237,328 @@ const CalculateMeal: React.FC = () => {
                                         <TextField
                                             disabled
                                             label="Carbohydrates"
-                                            className="max-w-[120px]!"
-                                            value={meal.Carbohydrates_total.toFixed(
-                                                4,
-                                            )}
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={(
+                                                meal.Carbohydrates_total ?? 0
+                                            ).toFixed(4)}
                                             slotProps={{
                                                 input: {
                                                     type: "number",
                                                 },
                                             }}
                                         />
-                                        {/* <TextField
+                                        <TextField
                                             disabled
                                             label="Glycemic Load"
-                                            className="max-w-[120px]!"
-                                            value={meal.Glycemic_index.toFixed(4)}
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={(
+                                                meal.Glycemic_load ?? 0
+                                            ).toFixed(4)}
                                             slotProps={{
                                                 input: {
                                                     type: "number",
                                                 },
                                             }}
-                                        /> */}
+                                        />
+                                        <TextField
+                                            disabled
+                                            label="Units"
+                                            className="max-w-[120px]! min-w-20! p-0!"
+                                            value={"-"}
+                                            slotProps={{
+                                                input: {
+                                                    type: "string",
+                                                },
+                                            }}
+                                        />
                                     </div>
                                 </div>
-                                {index === meals.length - 1 && (
-                                    <div className="flex w-full flex-col gap-3 py-4">
-                                        <div className="bg-DarkGreen h-[3px] w-full"></div>
-                                        <div className="flex w-full justify-between">
-                                            <h3 className="text-DarkGreen font-Poppins flex items-center pr-4 text-2xl">
-                                                Total
-                                            </h3>
-                                            <div className="flex max-w-[80%] gap-3">
-                                                <TextField
-                                                    disabled
-                                                    label="Calories"
-                                                    className="max-w-[120px]!"
-                                                    value={calculateTotalNutrition().Kcal.toFixed(
-                                                        4,
-                                                    )}
-                                                    slotProps={{
-                                                        input: {
-                                                            type: "number",
-                                                        },
-                                                    }}
-                                                />
-                                                <TextField
-                                                    disabled
-                                                    label="Protein"
-                                                    className="max-w-[120px]!"
-                                                    value={calculateTotalNutrition().Protein_total.toFixed(
-                                                        4,
-                                                    )}
-                                                    slotProps={{
-                                                        input: {
-                                                            type: "number",
-                                                        },
-                                                    }}
-                                                />
-                                                <TextField
-                                                    disabled
-                                                    label="Fat"
-                                                    className="max-w-[120px]!"
-                                                    value={meal.Fat_total.toFixed(
-                                                        4,
-                                                    )}
-                                                    slotProps={{
-                                                        input: {
-                                                            type: "number",
-                                                        },
-                                                    }}
-                                                />
-                                                <TextField
-                                                    disabled
-                                                    label="Carbohydrates"
-                                                    className="max-w-[120px]!"
-                                                    value={calculateTotalNutrition().Carbohydrates_total.toFixed(
-                                                        4,
-                                                    )}
-                                                    slotProps={{
-                                                        input: {
-                                                            type: "number",
-                                                        },
-                                                    }}
-                                                />
-                                                {/* <TextField
-                                                    disabled
-                                                    label="Glycemic Load"
-                                                    className="max-w-[120px]!"
-                                                    value={calculateTotalNutrition().glycemicLoad.toFixed(
-                                                        4,
-                                                    )}
-                                                    slotProps={{
-                                                        input: {
-                                                            type: "number",
-                                                        },
-                                                    }}
-                                                /> */}
-                                            </div>
-                                        </div>
+                                {meal.Recipes.map((recipe, recipeIndex) => (
+                                    <div
+                                        key={`${meal.Name}-recipe-${recipeIndex}`}
+                                        className="mt-1 flex w-full flex-col gap-3 overflow-x-scroll"
+                                    >
+                                        <h3 className="text-DarkGreen font-Poppins text-xl">
+                                            {recipe.Name ||
+                                                `Recipe #${recipeIndex + 1}`}
+                                        </h3>
+                                        {recipe.Ingredients.map(
+                                            (ingredient, ingIndex) => (
+                                                <div
+                                                    key={`${recipe.Name}-ingredient-${ingIndex}`}
+                                                    className="flex items-center justify-between gap-3"
+                                                >
+                                                    <div className="flex flex-col justify-center">
+                                                        <span className="text-DarkGreen font-Poppins">
+                                                            {ingredient.Name ||
+                                                                `Ingredient #${ingIndex + 1}`}
+                                                        </span>
+                                                    </div>
+                                                    <div className="just flex gap-3 overflow-x-scroll py-2">
+                                                        <TextField
+                                                            disabled
+                                                            label="Amount"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={
+                                                                ingredient.Amount +
+                                                                "g"
+                                                            }
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Water"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={
+                                                                ingredient.Water
+                                                                    ? ingredient.Water +
+                                                                      "ml"
+                                                                    : "-"
+                                                            }
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Meal Kcal %"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={
+                                                                ingredient.Kcal +
+                                                                "%"
+                                                            }
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Calories"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={(
+                                                                ingredient.Kcal ??
+                                                                0
+                                                            ).toFixed(4)}
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Protein"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={(
+                                                                calculateTotalNutrition()
+                                                                    .Protein_total ??
+                                                                0
+                                                            ).toFixed(4)}
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Fat"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={(
+                                                                calculateTotalNutrition()
+                                                                    .Fat_total ??
+                                                                0
+                                                            ).toFixed(4)}
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Carbohydrates"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={(
+                                                                calculateTotalNutrition()
+                                                                    .Carbohydrates_total ??
+                                                                0
+                                                            ).toFixed(4)}
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Glycemic Load"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={
+                                                                calculateTotalNutrition().Glycemic_load?.toFixed(
+                                                                    4,
+                                                                ) ?? "0.0000"
+                                                            }
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                        <TextField
+                                                            disabled
+                                                            label="Units"
+                                                            className="max-w-[120px]! min-w-20! p-0!"
+                                                            value={
+                                                                ingredient.Amount &&
+                                                                ingredient.Volume_per_Unit
+                                                                    ? ingredient.Amount /
+                                                                          ingredient.Volume_per_Unit +
+                                                                      "ml"
+                                                                    : "-"
+                                                            }
+                                                            slotProps={{
+                                                                input: {
+                                                                    type: "string",
+                                                                },
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ),
+                                        )}
                                     </div>
-                                )}
+                                ))}
                             </div>
                         ))}
+                        <div className="flex w-full flex-col gap-3 py-4">
+                            <div className="bg-DarkGreen h-[3px] w-full"></div>
+                            <div className="flex w-full items-center justify-between">
+                                <h3 className="text-DarkGreen font-Poppins flex items-center pr-4 text-2xl">
+                                    Total
+                                </h3>
+                                <div className="flex w-full gap-3 overflow-x-scroll py-2">
+                                    <TextField
+                                        disabled
+                                        label="Amount"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Amount
+                                                ? calculateTotalNutrition()
+                                                      .Amount + "g"
+                                                : "0"
+                                        }
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Water"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            planCalories > 0 &&
+                                            calculateTotalNutrition().Water
+                                                ? calculateTotalNutrition()
+                                                      .Water
+                                                : "-"
+                                        }
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Meal Kcal %"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            planCalories > 0 &&
+                                            calculateTotalNutrition().Kcal
+                                                ? (
+                                                      ((calculateTotalNutrition()
+                                                          .Kcal ?? 0) /
+                                                          planCalories) *
+                                                      100
+                                                  ).toFixed(1) + "%"
+                                                : "0%"
+                                        }
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Calories"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Kcal?.toFixed(
+                                                4,
+                                            ) ?? "0.0000"
+                                        }
+                                        slotProps={{
+                                            input: {
+                                                type: "number",
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Protein"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Protein_total?.toFixed(
+                                                4,
+                                            ) ?? "0.0000"
+                                        }
+                                        slotProps={{
+                                            input: {
+                                                type: "number",
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Fat"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Fat_total?.toFixed(
+                                                4,
+                                            ) ?? "0.0000"
+                                        }
+                                        slotProps={{
+                                            input: {
+                                                type: "number",
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Carbohydrates"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Carbohydrates_total?.toFixed(
+                                                4,
+                                            ) ?? "0.0000"
+                                        }
+                                        slotProps={{
+                                            input: {
+                                                type: "number",
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Glycemic Load"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={
+                                            calculateTotalNutrition().Glycemic_load?.toFixed(
+                                                4,
+                                            ) ?? "0.0000"
+                                        }
+                                        slotProps={{
+                                            input: {
+                                                type: "string",
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        disabled
+                                        label="Units"
+                                        className="max-w-[120px]! min-w-20! p-0!"
+                                        value={"-"}
+                                        slotProps={{
+                                            input: {
+                                                type: "string",
+                                            },
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
