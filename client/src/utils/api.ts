@@ -724,40 +724,10 @@ export const searchRecipesByName = async (
 
     const recipes: Recipe[] = data.map((item: any) => {
         const ingredients: Ingredient[] = item.Ingredients.map((ing: any) => {
+            const ingData = ing?.ingredient as Ingredient
             return {
-                Name: ing.ingredient.Name,
-                id: ing.id,
-                Code: ing.ingredient.Code,
-                Amount: ing.Amount,
-                Kcal: ing.ingredient.Kcal,
-                Protein_plant: ing.ingredient.Protein_plant,
-                Protein_animal: ing.ingredient.Protein_animal,
-                Protein_total: ing.ingredient.Protein_total,
-                Fat_saturated: ing.ingredient.Fat_saturated,
-                Fat_unsaturated: ing.ingredient.Fat_unsaturated,
-                Fat_total: ing.ingredient.Fat_total,
-                Cholesterol: ing.ingredient.Cholesterol,
-                Carbohydrates_mono: ing.ingredient.Carbohydrates_mono,
-                Carbohydrates_poli: ing.ingredient.Carbohydrates_poli,
-                Carbohydrates_total: ing.ingredient.Carbohydrates_total,
-                Ashes: ing.ingredient.Ashes,
-                Cellulose: ing.ingredient.Cellulose,
-                Mineral_Na: ing.ingredient.Mineral_Na,
-                Mineral_K: ing.ingredient.Mineral_K,
-                Mineral_Ca: ing.ingredient.Mineral_Ca,
-                Mineral_Mg: ing.ingredient.Mineral_Mg,
-                Mineral_P: ing.ingredient.Mineral_P,
-                Mineral_Fe: ing.ingredient.Mineral_Fe,
-                Mineral_Zn: ing.ingredient.Mineral_Zn,
-                Mineral_Cu: ing.ingredient.Mineral_Cu,
-                Vitamin_RE: ing.ingredient.Vitamin_RE,
-                Vitamin_B1: ing.ingredient.Vitamin_B1,
-                Vitamin_B2: ing.ingredient.Vitamin_B2,
-                Vitamin_B6: ing.ingredient.Vitamin_B6,
-                Vitamin_PP: ing.ingredient.Vitamin_PP,
-                Vitamin_C: ing.ingredient.Vitamin_C,
-                Vitamin_E: ing.ingredient.Vitamin_E,
-                Glycemic_index: ing.ingredient.Glycemic_index,
+                ...ingData,
+                Amount: ing?.Amount,
             }
         })
 

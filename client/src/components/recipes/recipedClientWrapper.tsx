@@ -196,16 +196,18 @@ interface listOfPlans {
 }
 
 const RecipesClientWrapper = () => {
-    const { cartModalIsOpen, openModal, searchTerm, openSearchModal, searchModalIsOpen } = useCartModalCtx()
+    const {
+        cartModalIsOpen,
+        openModal,
+        searchTerm,
+        openSearchModal,
+        searchModalIsOpen,
+    } = useCartModalCtx()
 
     const [listOfPlans, setListOfPlans] = useState<listOfPlans[]>([])
 
     const [loading, setLoading] = useState(true)
     const [activeOption, setActiveOption] = useState("dailyPlan")
-
-
-
-
 
     const [recipes, setRecipes] = useState<Recipe[]>([])
     //const [weaklyPlan, setWeaklyPlan] = useState([])
@@ -214,42 +216,41 @@ const RecipesClientWrapper = () => {
         const getData = async () => {
             setLoading(true)
 
-            try{
+            try {
                 const token = Cookies.get("jwtNutrifyS")
 
-
-                if (!token){
+                if (!token) {
                     toast.error("You are not authenticated.")
                     return
                 }
 
-                
-                const data = await getAllOrSearchByNameRecipes(token, searchTerm)
-
+                const data = await getAllOrSearchByNameRecipes(
+                    token,
+                    searchTerm,
+                )
 
                 toast.success("Data fetched successfully.")
 
                 setRecipes(data)
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            }catch (error: unknown | any) {
-        console.error(error)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (error: unknown | any) {
+                console.error(error)
 
-        if (error.response?.status === 403) {
-            toast.error("Access forbidden. You might not have permission.")
-        } else if (error.response?.status === 401) {
-            toast.error("Unauthorized. Please log in again.")
-        } else {
-            toast.error("Failed to fetch data.")
-        }
+                if (error.response?.status === 403) {
+                    toast.error(
+                        "Access forbidden. You might not have permission.",
+                    )
+                } else if (error.response?.status === 401) {
+                    toast.error("Unauthorized. Please log in again.")
+                } else {
+                    toast.error("Failed to fetch data.")
+                }
 
-        setRecipes([])//kako app neb krashovao
-    }
-
-            
+                setRecipes([]) //kako app neb krashovao
+            }
 
             setLoading(false)
-
         }
         getData()
     }, [searchTerm])
@@ -259,14 +260,12 @@ const RecipesClientWrapper = () => {
     useEffect(() => {
         setLoading(true)
 
-        
-            if (activeOption === "dailyPlan") {
-                setListOfPlans(fetchedSingleRecipes)
-            } else {
-                setListOfPlans(fetchedWeaklyPlanRecipes)
-            }
-            setLoading(false)
-
+        if (activeOption === "dailyPlan") {
+            setListOfPlans(fetchedSingleRecipes)
+        } else {
+            setListOfPlans(fetchedWeaklyPlanRecipes)
+        }
+        setLoading(false)
     }, [activeOption])
 
     return (
@@ -327,7 +326,7 @@ const RecipesClientWrapper = () => {
                 </div>
             )}
             {cartModalIsOpen && <CartModal />}
-            {searchModalIsOpen && <SearchModal/>}
+            {searchModalIsOpen && <SearchModal />}
         </>
     )
 }

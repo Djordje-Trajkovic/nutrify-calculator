@@ -1,10 +1,12 @@
 "use client"
+import ReactToPDF, { usePDF } from "react-to-pdf"
 import { Ingredient, Meal, NutritionalFields, Recipe } from "@/utils/types"
-import { Autocomplete, Button, Stack, TextField } from "@mui/material"
+import { Autocomplete, Button, Modal, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
-import { Check, Minus, PencilSimple } from "@phosphor-icons/react"
+import { Check, Minus, PencilSimple, Plus } from "@phosphor-icons/react"
 import { searchRecipesByName } from "@/utils/api"
+import MealTable from "./MealTable"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -95,9 +97,12 @@ const CalculateMeal: React.FC = () => {
         },
     ])
     const [mealPlanName, setMealPlanName] = useState("")
-    // const [open, setOpen] = useState(false)
-    // const [chosenMeal, setChosenMeal] = useState<Meal | null>(null)
+    const { targetRef, toPDF } = usePDF({
+        filename: `${mealPlanName || "meal-plan"}.pdf`,
+        resolution: 10,
+    })
     const [planCalories, setPlanCalories] = useState(1800)
+    const [viewReport, setViewReport] = useState(false)
 
     const handleIngredientSearch = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -454,164 +459,247 @@ const CalculateMeal: React.FC = () => {
             ...nutritionTotals,
         }
     }
-    const calculateTotalNutrition = () => {
-        type MealTotals = {
-            Glycemic_load?: number
-        } & NutritionalFields
-
-        const totals: MealTotals = {
-            Kcal: 0,
-            Protein_total: 0,
-            Protein_plant: 0,
-            Protein_animal: 0,
-            Fat_total: 0,
-            Fat_saturated: 0,
-            Fat_unsaturated: 0,
-            Carbohydrates_total: 0,
-            Carbohydrates_mono: 0,
-            Carbohydrates_poli: 0,
-            Cholesterol: 0,
-            Ashes: 0,
-            Cellulose: 0,
-            Mineral_Na: 0,
-            Mineral_K: 0,
-            Mineral_Ca: 0,
-            Mineral_Mg: 0,
-            Mineral_P: 0,
-            Mineral_Fe: 0,
-            Mineral_Zn: 0,
-            Mineral_Cu: 0,
-            Vitamin_RE: 0,
-            Vitamin_B1: 0,
-            Vitamin_B2: 0,
-            Vitamin_B6: 0,
-            Vitamin_PP: 0,
-            Vitamin_C: 0,
-            Vitamin_E: 0,
-            Glycemic_index: 0,
-            Atherogenic_index: 0,
-            Glycemic_load: 0,
-            // All additional NutritionalFields fields, initialized to 0
-            Amount: 0,
-            Carbohydrates_fructose: 0,
-            Carbohydrates_glucose: 0,
-            Carbohydrates_isomaltulose: 0,
-            Carbohydrates_lactose: 0,
-            Carbohydrates_maltose: 0,
-            Carbohydrates_Noncaloric_Carbohydrates: 0,
-            Carbohydrates_Organic_Acids: 0,
-            Carbohydrates_Polyols: 0,
-            Carbohydrates_sucrose: 0,
-            Carotenoids: 0,
-            Fat_aa: 0,
-            Fat_ala: 0,
-            Fat_Arachidonic_Acid: 0,
-            Fat_dha: 0,
-            Fat_epa: 0,
-            Fat_la: 0,
-            Fat_mct: 0,
-            Fatty_Acids_C10: 0,
-            Fatty_Acids_C12: 0,
-            Fatty_Acids_C14: 0,
-            Fatty_Acids_C6: 0,
-            Fatty_Acids_C8: 0,
-            Fiber_Fructooligosaccharides: 0,
-            Fiber_Galactooligosaccharides: 0,
-            Fiber_Insoluble: 0,
-            Fiber_Soluble: 0,
-            Fiber_total: 0,
-            MCT_TCM_ratio: 0,
-            Mineral_Cl: 0,
-            Mineral_Cr: 0,
-            Mineral_F: 0,
-            Mineral_Jod: 0,
-            Mineral_Mn: 0,
-            Mineral_Mo: 0,
-            Mineral_S: 0,
-            Mineral_Se: 0,
-            Nucleotides: 0,
-            Omega3_Omega6_ratio: 0,
-            Osmolality: 0,
-            Osmolarity: 0,
-            Phosphates: 0,
-            Protein_Carnitine: 0,
-            Protein_Casein: 0,
-            Protein_Essential_Amino_Acids: 0,
-            Protein_L_Arginin: 0,
-            Protein_L_Leucin: 0,
-            Protein_taurine: 0,
-            Protein_Whey: 0,
-            Sugars: 0,
-            Vitamin_A: 0,
-            Vitamin_B12: 0,
-            Vitamin_B3: 0,
-            Vitamin_B4_Holin: 0,
-            Vitamin_B5: 0,
-            Vitamin_B7: 0,
-            Vitamin_B8_Inositol: 0,
-            Vitamin_B9_Folic_Acid: 0,
-            Vitamin_D: 0,
-            Vitamin_K: 0,
-            Volume_per_Unit: 0,
-            Water: 0,
-        }
-
-        let totalCarbsForGlycemicIndex = 0
-        let weightedGlycemicIndex = 0
-
-        for (const meal of meals) {
-            // Sum all fields in NutritionalFields, handling possibly undefined
-            for (const key in totals) {
-                if (Object.prototype.hasOwnProperty.call(totals, key)) {
-                    // @ts-expect-error Possibly undefined fields
-                    totals[key] += meal[key] ?? 0
-                }
-            }
-
-            // For weighted glycemic index calculation
-            const mealCarbs = meal.Carbohydrates_total ?? 0
-            if (mealCarbs > 0 && meal.Glycemic_index != null) {
-                weightedGlycemicIndex += mealCarbs * meal.Glycemic_index
-                totalCarbsForGlycemicIndex += mealCarbs
-            }
-        }
-
-        // Calculate weighted glycemic index if there are carbs
-        if (totalCarbsForGlycemicIndex > 0) {
-            totals.Glycemic_index =
-                weightedGlycemicIndex / totalCarbsForGlycemicIndex
-        }
-
-        // Calculate glycemic load
-        totals.Glycemic_load =
-            (totals.Carbohydrates_total ?? 0) *
-            ((totals.Glycemic_index ?? 0) / 100)
-
-        totals.Water = meals.reduce((sum, meal) => sum + (meal.Water ?? 0), 0)
-        totals.Amount = meals.reduce((sum, meal) => sum + (meal.Amount ?? 0), 0)
-
-        return totals
-    }
 
     return (
         <>
-            <div className="w-full pt-30 pb-10">
-                <div className="flex w-full justify-between gap-4 pb-10">
-                    <div className="flex gap-10">
-                        <h1 className="text-DarkGreen font-Poppins text-4xl">
-                            Create Meal Plan
-                        </h1>
-                        <Button
-                            variant="contained"
-                            className="bg-DarkGreen! hover:bg-DarkGreen/80"
-                            onClick={() => {
-                                handleAddNewMeal()
-                            }}
-                        >
-                            Add New Meal
-                        </Button>
+            <Modal
+                open={viewReport}
+                onClose={() => setViewReport(false)}
+                className="flex items-center justify-center p-20"
+            >
+                <div
+                    style={{
+                        color: "#00473C", // text-DarkGreen
+                        height: "100%",
+                        width: "100%",
+                        overflowY: "auto",
+                        borderRadius: "1rem", // rounded-2xl
+                        backgroundColor: "#ffffff",
+                        padding: "2.5rem", // px-10
+                        boxSizing: "border-box",
+                    }}
+                >
+                    {/* Header */}
+                    <div
+                        style={{
+                            position: "sticky",
+                            top: 0,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            backgroundColor: "#ffffff",
+                            paddingTop: "2.5rem",
+                            paddingBottom: "2.5rem",
+                            zIndex: 10,
+                        }}
+                    >
+                        <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+                            Nutritional Report
+                        </h2>
+                        <div style={{ display: "flex", gap: "1.25rem" }}>
+                            <button
+                                style={{
+                                    backgroundColor: "#00473C",
+                                    borderRadius: "0.25rem",
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        color: "#ffffff",
+                                        padding: "0.5rem 1rem",
+                                        display: "inline-block",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() => toPDF()}
+                                >
+                                    Download PDF
+                                </span>
+                            </button>
+                            <button
+                                style={{
+                                    backgroundColor: "#00473C",
+                                    borderRadius: "0.25rem",
+                                    color: "#ffffff",
+                                    padding: "0.5rem 1rem",
+                                    cursor: "pointer",
+                                }}
+                                onClick={() => setViewReport(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex gap-10">
+
+                    {/* MealTables container */}
+                    <div
+                        style={{
+                            marginBottom: "2.5rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "2.5rem",
+                            padding: "2.5rem",
+                        }}
+                        ref={targetRef}
+                    >
+                        {/* Render your MealTables here */}
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Kcal",
+                                "Amount",
+                                "Volume_per_Unit",
+                                "Water",
+                                "Ashes",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Protein_total",
+                                "Protein_plant",
+                                "Protein_animal",
+                                "Protein_Whey",
+                                "Protein_Casein",
+                                "Protein_Carnitine",
+                                "Protein_taurine",
+                                "Protein_Essential_Amino_Acids",
+                                "Protein_L_Arginin",
+                                "Protein_L_Leucin",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Fat_total",
+                                "Fat_saturated",
+                                "Fat_unsaturated",
+                                "Fat_la",
+                                "Fat_aa",
+                                "Fat_ala",
+                                "Fat_dha",
+                                "Fat_epa",
+                                "Fat_mct",
+                                "MCT_TCM_ratio",
+                                "Fatty_Acids_C6",
+                                "Fatty_Acids_C8",
+                                "Fatty_Acids_C10",
+                                "Fatty_Acids_C12",
+                                "Fatty_Acids_C14",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Carbohydrates_total",
+                                "Carbohydrates_mono",
+                                "Carbohydrates_poli",
+                                "Carbohydrates_fructose",
+                                "Carbohydrates_glucose",
+                                "Carbohydrates_sucrose",
+                                "Carbohydrates_lactose",
+                                "Carbohydrates_maltose",
+                                "Carbohydrates_isomaltulose",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Carbohydrates_Noncaloric_Carbohydrates",
+                                "Carbohydrates_Organic_Acids",
+                                "Carbohydrates_Polyols",
+                                "Fiber_total",
+                                "Fiber_Soluble",
+                                "Fiber_Insoluble",
+                                "Fiber_Fructooligosaccharides",
+                                "Fiber_Galactooligosaccharides",
+                                "Sugars",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Cholesterol",
+                                "Atherogenic_index",
+                                "Glycemic_index",
+                                "Glycemic_load",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Mineral_Na",
+                                "Mineral_K",
+                                "Mineral_Ca",
+                                "Mineral_Mg",
+                                "Mineral_P",
+                                "Mineral_Fe",
+                                "Mineral_Zn",
+                                "Mineral_Cu",
+                                "Mineral_Cl",
+                                "Mineral_Cr",
+                                "Mineral_F",
+                                "Mineral_Jod",
+                                "Mineral_Mn",
+                                "Mineral_Mo",
+                                "Mineral_S",
+                                "Mineral_Se",
+                                "Phosphates",
+                            ]}
+                        />
+                        <MealTable
+                            meals={meals}
+                            fields={[
+                                "Vitamin_A",
+                                "Vitamin_RE",
+                                "Carotenoids",
+                                "Vitamin_B1",
+                                "Vitamin_B2",
+                                "Vitamin_B3",
+                                "Vitamin_B4_Holin",
+                                "Vitamin_B5",
+                                "Vitamin_B6",
+                                "Vitamin_B7",
+                                "Vitamin_B8_Inositol",
+                                "Vitamin_B9_Folic_Acid",
+                                "Vitamin_B12",
+                                "Vitamin_PP",
+                                "Vitamin_C",
+                                "Vitamin_D",
+                                "Vitamin_E",
+                                "Vitamin_K",
+                                "Nucleotides",
+                            ]}
+                        />
+                    </div>
+                </div>
+            </Modal>
+            <div className="w-full pt-30 pb-10">
+                <div className="flex justify-between pb-10">
+                    <h1 className="text-DarkGreen font-Poppins text-4xl font-semibold">
+                        Create Meal Plan
+                    </h1>
+                    <Button
+                        variant="contained"
+                        className="bg-LightGreen! hover:bg-LightGreen/80! gap-4 normal-case!"
+                        onClick={() => {
+                            handleAddNewMeal()
+                        }}
+                    >
+                        Add New Meal
+                        <Plus size={18} color="#FAF9F6" weight="bold" />
+                    </Button>
+                </div>
+                <div className="flex w-full justify-between gap-4 pb-10">
+                    <div className="flex gap-10 rounded-2xl bg-white p-5 shadow-md">
+                        <TextField
+                            label="Meal Plan Name"
+                            placeholder="Write name"
+                            className="w-full min-w-[300px] bg-white px-5"
+                            onChange={(e) => {
+                                setMealPlanName(e.target.value)
+                            }}
+                            value={mealPlanName ?? "Meal Plan Name"}
+                        />
                         <TextField
                             label="Total Calories"
                             placeholder="Set Meal Plan Calories"
@@ -625,18 +713,9 @@ const CalculateMeal: React.FC = () => {
                             }}
                             value={planCalories}
                         />
-                        <TextField
-                            label="Meal Plan Name"
-                            placeholder="Write name"
-                            className="w-full max-w-[300px] bg-white px-5"
-                            onChange={(e) => {
-                                setMealPlanName(e.target.value)
-                            }}
-                            value={mealPlanName}
-                        />
                         <Button
                             variant="contained"
-                            className="bg-DarkGreen! hover:bg-DarkGreen/80 w-full"
+                            className="bg-LightGreen! hover:bg-LightGreen/80! w-full"
                             onClick={() => {
                                 console.log("Save meal plan")
                             }}
@@ -644,341 +723,462 @@ const CalculateMeal: React.FC = () => {
                             Save Meal Plan
                         </Button>
                     </div>
+                    <div className="flex w-full max-w-3/5 items-center justify-between rounded-2xl bg-white p-5 shadow-md">
+                        <h1 className="text-DarkGreen font-Poppins w-full text-3xl font-semibold">
+                            Results
+                        </h1>
+                        <Button
+                            variant="contained"
+                            className="bg-LightGreen! hover:bg-LightGreen/80!"
+                            onClick={() => {
+                                setViewReport(true)
+                            }}
+                        >
+                            View Report
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex w-full gap-10">
-                    <div className="flex w-full max-w-1/3 flex-col gap-10">
-                        <form className="text-DarkGreen flex flex-col gap-10">
-                            {meals.map((meal, index) => (
-                                <div
-                                    key={index + meal.Name}
-                                    className="flex w-full flex-col items-start gap-3"
-                                >
-                                    <div className="flex w-full">
-                                        <div className="flex w-full justify-between">
-                                            <div className="flex items-center gap-3">
-                                                {editMealName[index] ? (
-                                                    <TextField
-                                                        label="Meal Name"
-                                                        value={
-                                                            mealName[index] ??
-                                                            meal.Name
-                                                        }
-                                                        onChange={(e) => {
-                                                            setMealName(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    [index]:
-                                                                        e.target
-                                                                            .value,
-                                                                }),
-                                                            )
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <h2 className="text-DarkGreen font-Poppins text-3xl">
-                                                        {meal.Name}
-                                                    </h2>
-                                                )}
-                                                {!editMealName[index] ? (
-                                                    <Button
-                                                        className="block! min-w-0! px-2! py-2!"
-                                                        onClick={() => {
-                                                            setEditMealName(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    [index]:
-                                                                        true,
-                                                                }),
-                                                            )
-                                                            setMealName(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    [index]:
-                                                                        meal.Name,
-                                                                }),
-                                                            )
-                                                        }}
-                                                    >
-                                                        <PencilSimple
-                                                            size={24}
-                                                            className="text-DarkGreen"
-                                                            weight="bold"
-                                                        ></PencilSimple>
-                                                    </Button>
-                                                ) : (
-                                                    <Button
-                                                        className="block! min-w-0! px-2! py-2!"
-                                                        onClick={() => {
-                                                            setMeals((prev) => {
-                                                                const newMeals =
-                                                                    [...prev]
-                                                                newMeals[
+                <div className="flex w-full flex-col gap-10">
+                    {meals.map((meal, index) => (
+                        <div
+                            className="flex w-full flex-row gap-10 bg-white p-10 shadow-md"
+                            key={index + meal.Name}
+                        >
+                            <div className="flex w-full max-w-1/3 flex-col gap-10">
+                                <form className="text-DarkGreen flex flex-col gap-10">
+                                    <div className="flex w-full flex-col items-start gap-3">
+                                        <div className="flex w-full">
+                                            <div className="flex w-full justify-between">
+                                                <div className="flex w-full items-center justify-between gap-3">
+                                                    {editMealName[index] ? (
+                                                        <TextField
+                                                            label="Meal Name"
+                                                            value={
+                                                                mealName[
                                                                     index
-                                                                ].Name =
-                                                                    mealName[
-                                                                        index
-                                                                    ] ||
-                                                                    meal.Name
-                                                                return newMeals
-                                                            })
-                                                            setEditMealName(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    [index]:
-                                                                        false,
-                                                                }),
-                                                            )
-                                                        }}
-                                                    >
-                                                        <Check
-                                                            size={24}
-                                                            className="text-DarkGreen"
-                                                            weight="bold"
-                                                        ></Check>
-                                                    </Button>
-                                                )}
-                                                {meals.length > 1 && (
-                                                    <Button
-                                                        className="bg-DarkGreen! hover:bg-DarkGreen/80 flex! h-9 w-9 min-w-0! justify-center px-0! py-0!"
-                                                        onClick={() => {
-                                                            const newMeals = [
-                                                                ...meals,
-                                                            ]
-                                                            newMeals.splice(
-                                                                index,
-                                                                1,
-                                                            )
-                                                            setMeals(newMeals)
-                                                        }}
-                                                    >
-                                                        <Minus
-                                                            size={24}
-                                                            color="#FAF9F6"
-                                                            weight="regular"
-                                                        ></Minus>
-                                                    </Button>
-                                                )}
-                                                <Button
-                                                    variant="contained"
-                                                    className="bg-DarkGreen! hover:bg-DarkGreen/80"
-                                                    onClick={() =>
-                                                        handleAddNewRecipe(
-                                                            index,
-                                                        )
-                                                    }
-                                                >
-                                                    Add Recipe
-                                                </Button>
+                                                                ] ?? meal.Name
+                                                            }
+                                                            onChange={(e) => {
+                                                                setMealName(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        [index]:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    }),
+                                                                )
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <h2 className="text-DarkGreen font-Poppins text-3xl">
+                                                            {meal.Name}
+                                                        </h2>
+                                                    )}
+                                                    <div className="flex items-center gap-3">
+                                                        {!editMealName[
+                                                            index
+                                                        ] ? (
+                                                            <Button
+                                                                className="block! min-w-0! px-2! py-2!"
+                                                                onClick={() => {
+                                                                    setEditMealName(
+                                                                        (
+                                                                            prev,
+                                                                        ) => ({
+                                                                            ...prev,
+                                                                            [index]:
+                                                                                true,
+                                                                        }),
+                                                                    )
+                                                                    setMealName(
+                                                                        (
+                                                                            prev,
+                                                                        ) => ({
+                                                                            ...prev,
+                                                                            [index]:
+                                                                                meal.Name,
+                                                                        }),
+                                                                    )
+                                                                }}
+                                                            >
+                                                                <PencilSimple
+                                                                    size={24}
+                                                                    className="text-DarkGreen"
+                                                                    weight="bold"
+                                                                ></PencilSimple>
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                className="block! min-w-0! px-2! py-2!"
+                                                                onClick={() => {
+                                                                    setMeals(
+                                                                        (
+                                                                            prev,
+                                                                        ) => {
+                                                                            const newMeals =
+                                                                                [
+                                                                                    ...prev,
+                                                                                ]
+                                                                            newMeals[
+                                                                                index
+                                                                            ].Name =
+                                                                                mealName[
+                                                                                    index
+                                                                                ] ||
+                                                                                meal.Name
+                                                                            return newMeals
+                                                                        },
+                                                                    )
+                                                                    setEditMealName(
+                                                                        (
+                                                                            prev,
+                                                                        ) => ({
+                                                                            ...prev,
+                                                                            [index]:
+                                                                                false,
+                                                                        }),
+                                                                    )
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    size={24}
+                                                                    className="text-DarkGreen"
+                                                                    weight="bold"
+                                                                ></Check>
+                                                            </Button>
+                                                        )}
+                                                        {meals.length > 1 && (
+                                                            <Button
+                                                                className="bg-LightGreen! hover:bg-LightGreen/80! flex! h-9 w-9 min-w-0! justify-center px-0! py-0!"
+                                                                onClick={() => {
+                                                                    const newMeals =
+                                                                        [
+                                                                            ...meals,
+                                                                        ]
+                                                                    newMeals.splice(
+                                                                        index,
+                                                                        1,
+                                                                    )
+                                                                    setMeals(
+                                                                        newMeals,
+                                                                    )
+                                                                }}
+                                                            >
+                                                                <Minus
+                                                                    size={24}
+                                                                    color="#FAF9F6"
+                                                                    weight="regular"
+                                                                ></Minus>
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="contained"
+                                                            className="bg-LightGreen! hover:bg-LightGreen/80!"
+                                                            onClick={() =>
+                                                                handleAddNewRecipe(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        >
+                                                            Add Recipe
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    {meal.Recipes.map((recipe, recIndex) => (
-                                        <div
-                                            key={recIndex + recipe.Name}
-                                            className="flex w-full flex-col gap-3"
-                                        >
-                                            <div className="flex w-full flex-col">
-                                                <Stack spacing={2}>
-                                                    <Autocomplete
-                                                        freeSolo
-                                                        id={`autocomplete-${index}`}
-                                                        disableClearable
-                                                        options={
-                                                            searchRecipes || []
-                                                        }
-                                                        getOptionLabel={(
-                                                            option,
-                                                        ) =>
-                                                            typeof option ===
-                                                            "string"
-                                                                ? option
-                                                                : option.Name ||
-                                                                  ""
-                                                        }
-                                                        onChange={(
-                                                            event,
-                                                            value,
-                                                        ) => {
-                                                            if (
-                                                                value &&
-                                                                typeof value !==
+                                        {meal.Recipes.map(
+                                            (recipe, recIndex) => (
+                                                <div
+                                                    key={recIndex + recipe.Name}
+                                                    className="flex w-full flex-col gap-3"
+                                                >
+                                                    <div className="flex w-full flex-col">
+                                                        <Stack spacing={2}>
+                                                            <Autocomplete
+                                                                freeSolo
+                                                                id={`autocomplete-${index}`}
+                                                                disableClearable
+                                                                options={
+                                                                    searchRecipes ||
+                                                                    []
+                                                                }
+                                                                getOptionLabel={(
+                                                                    option,
+                                                                ) =>
+                                                                    typeof option ===
                                                                     "string"
-                                                            ) {
-                                                                setMeals(
-                                                                    (prev) => {
-                                                                        return prev.map(
+                                                                        ? option
+                                                                        : option.Name ||
+                                                                          ""
+                                                                }
+                                                                onChange={(
+                                                                    event,
+                                                                    value,
+                                                                ) => {
+                                                                    if (
+                                                                        value &&
+                                                                        typeof value !==
+                                                                            "string"
+                                                                    ) {
+                                                                        setMeals(
                                                                             (
-                                                                                meal,
-                                                                                mealIdx,
+                                                                                prev,
                                                                             ) => {
-                                                                                if (
-                                                                                    mealIdx !==
-                                                                                    index
-                                                                                )
-                                                                                    return meal
+                                                                                return prev.map(
+                                                                                    (
+                                                                                        meal,
+                                                                                        mealIdx,
+                                                                                    ) => {
+                                                                                        if (
+                                                                                            mealIdx !==
+                                                                                            index
+                                                                                        )
+                                                                                            return meal
 
-                                                                                const updatedRecipes =
-                                                                                    meal.Recipes.map(
-                                                                                        (
-                                                                                            r,
-                                                                                            rIdx,
-                                                                                        ) => {
-                                                                                            if (
-                                                                                                rIdx !==
-                                                                                                recIndex
+                                                                                        const updatedRecipes =
+                                                                                            meal.Recipes.map(
+                                                                                                (
+                                                                                                    r,
+                                                                                                    rIdx,
+                                                                                                ) => {
+                                                                                                    if (
+                                                                                                        rIdx !==
+                                                                                                        recIndex
+                                                                                                    )
+                                                                                                        return r
+
+                                                                                                    return {
+                                                                                                        ...value,
+                                                                                                        Ingredients:
+                                                                                                            value.Ingredients ??
+                                                                                                            [],
+                                                                                                        Name:
+                                                                                                            value.Name ??
+                                                                                                            "Recipe",
+                                                                                                    }
+                                                                                                },
                                                                                             )
-                                                                                                return r
 
-                                                                                            return {
-                                                                                                ...value,
-                                                                                                Ingredients:
-                                                                                                    value.Ingredients ??
-                                                                                                    [],
-                                                                                                Name:
-                                                                                                    value.Name ??
-                                                                                                    "Recipe",
+                                                                                        const updatedMeal: Meal =
+                                                                                            {
+                                                                                                ...meal,
+                                                                                                Recipes:
+                                                                                                    updatedRecipes,
                                                                                             }
-                                                                                        },
-                                                                                    )
 
-                                                                                const updatedMeal: Meal =
-                                                                                    {
-                                                                                        ...meal,
-                                                                                        Recipes:
-                                                                                            updatedRecipes,
-                                                                                    }
-
-                                                                                return calculateMealNutrition(
-                                                                                    updatedMeal,
+                                                                                        return calculateMealNutrition(
+                                                                                            updatedMeal,
+                                                                                        )
+                                                                                    },
                                                                                 )
                                                                             },
                                                                         )
-                                                                    },
-                                                                )
-                                                            }
-                                                        }}
-                                                        renderInput={(
-                                                            params,
-                                                        ) => (
-                                                            <div className="flex w-full gap-3">
-                                                                <TextField
-                                                                    {...params}
-                                                                    label={
-                                                                        recipe.Name ||
-                                                                        "Recipe #" +
-                                                                            (recIndex +
-                                                                                1)
                                                                     }
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) => {
-                                                                        handleRecipeSearch(
-                                                                            e,
-                                                                        )
-                                                                    }}
-                                                                    onBlur={(
-                                                                        e,
-                                                                    ) => {
-                                                                        const inputValue =
-                                                                            e
-                                                                                .target
-                                                                                .value
-                                                                        if (
-                                                                            inputValue &&
-                                                                            inputValue.length >
-                                                                                0
-                                                                        ) {
-                                                                            setMeals(
-                                                                                (
-                                                                                    prev,
-                                                                                ) => {
-                                                                                    const newMeals =
-                                                                                        [
-                                                                                            ...prev,
-                                                                                        ]
-                                                                                    newMeals[
-                                                                                        index
-                                                                                    ].Recipes[
-                                                                                        recIndex
-                                                                                    ].Name =
-                                                                                        inputValue
-                                                                                    return newMeals
+                                                                }}
+                                                                renderInput={(
+                                                                    params,
+                                                                ) => (
+                                                                    <div className="flex w-full gap-3">
+                                                                        <TextField
+                                                                            {...params}
+                                                                            label={
+                                                                                recipe.Name ||
+                                                                                "Recipe #" +
+                                                                                    (recIndex +
+                                                                                        1)
+                                                                            }
+                                                                            onChange={(
+                                                                                e,
+                                                                            ) => {
+                                                                                handleRecipeSearch(
+                                                                                    e,
+                                                                                )
+                                                                            }}
+                                                                            onBlur={(
+                                                                                e,
+                                                                            ) => {
+                                                                                const inputValue =
+                                                                                    e
+                                                                                        .target
+                                                                                        .value
+                                                                                if (
+                                                                                    inputValue &&
+                                                                                    inputValue.length >
+                                                                                        0
+                                                                                ) {
+                                                                                    setMeals(
+                                                                                        (
+                                                                                            prev,
+                                                                                        ) => {
+                                                                                            const newMeals =
+                                                                                                [
+                                                                                                    ...prev,
+                                                                                                ]
+                                                                                            newMeals[
+                                                                                                index
+                                                                                            ].Recipes[
+                                                                                                recIndex
+                                                                                            ].Name =
+                                                                                                inputValue
+                                                                                            return newMeals
+                                                                                        },
+                                                                                    )
+                                                                                }
+                                                                            }}
+                                                                            slotProps={{
+                                                                                input: {
+                                                                                    ...params.InputProps,
+                                                                                    type: "search",
                                                                                 },
-                                                                            )
-                                                                        }
-                                                                    }}
-                                                                    slotProps={{
-                                                                        input: {
-                                                                            ...params.InputProps,
-                                                                            type: "search",
-                                                                        },
-                                                                    }}
-                                                                />
-                                                                {meal.Recipes
-                                                                    .length >
-                                                                    1 && (
-                                                                    <Button
-                                                                        variant="contained"
-                                                                        className="bg-DarkGreen! hover:bg-DarkGreen/80"
-                                                                        onClick={() =>
-                                                                            handleRemoveRecipe(
-                                                                                index,
-                                                                                recIndex,
-                                                                            )
+                                                                            }}
+                                                                        />
+                                                                        {meal
+                                                                            .Recipes
+                                                                            .length >
+                                                                            1 && (
+                                                                            <Button
+                                                                                variant="contained"
+                                                                                className="bg-LightGreen! hover:bg-LightGreen/80!"
+                                                                                onClick={() =>
+                                                                                    handleRemoveRecipe(
+                                                                                        index,
+                                                                                        recIndex,
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Minus
+                                                                                    size={
+                                                                                        24
+                                                                                    }
+                                                                                    color="#FAF9F6"
+                                                                                    weight="regular"
+                                                                                ></Minus>
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            />
+                                                        </Stack>
+                                                    </div>
+                                                    {recipe.Ingredients.map(
+                                                        (
+                                                            ingredient,
+                                                            ingIndex,
+                                                        ) => (
+                                                            <div
+                                                                key={
+                                                                    ingIndex +
+                                                                    recipe.Name +
+                                                                    ingredient.Name
+                                                                }
+                                                                className="flex gap-1"
+                                                            >
+                                                                <div className="flex w-full flex-col">
+                                                                    <Stack
+                                                                        spacing={
+                                                                            2
                                                                         }
                                                                     >
-                                                                        <Minus
-                                                                            size={
-                                                                                24
+                                                                        <Autocomplete
+                                                                            freeSolo
+                                                                            id={`autocomplete-${index}`}
+                                                                            disableClearable
+                                                                            options={
+                                                                                searchIngredients ||
+                                                                                []
                                                                             }
-                                                                            color="#FAF9F6"
-                                                                            weight="regular"
-                                                                        ></Minus>
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    />
-                                                </Stack>
-                                            </div>
-                                            {recipe.Ingredients.map(
-                                                (ingredient, ingIndex) => (
-                                                    <div
-                                                        key={
-                                                            ingIndex +
-                                                            recipe.Name +
-                                                            ingredient.Name
-                                                        }
-                                                        className="flex gap-1"
-                                                    >
-                                                        <div className="flex w-full flex-col">
-                                                            <Stack spacing={2}>
-                                                                <Autocomplete
-                                                                    freeSolo
-                                                                    id={`autocomplete-${index}`}
-                                                                    disableClearable
-                                                                    options={
-                                                                        searchIngredients ||
-                                                                        []
-                                                                    }
-                                                                    getOptionLabel={(
-                                                                        option,
-                                                                    ) =>
-                                                                        typeof option ===
-                                                                        "string"
-                                                                            ? option
-                                                                            : option.Name ||
-                                                                              ""
-                                                                    }
-                                                                    onChange={(
-                                                                        event,
-                                                                        value,
-                                                                    ) => {
-                                                                        if (
-                                                                            value &&
-                                                                            typeof value !==
+                                                                            getOptionLabel={(
+                                                                                option,
+                                                                            ) =>
+                                                                                typeof option ===
                                                                                 "string"
-                                                                        ) {
+                                                                                    ? option
+                                                                                    : option.Name ||
+                                                                                      ""
+                                                                            }
+                                                                            onChange={(
+                                                                                event,
+                                                                                value,
+                                                                            ) => {
+                                                                                if (
+                                                                                    value &&
+                                                                                    typeof value !==
+                                                                                        "string"
+                                                                                ) {
+                                                                                    setMeals(
+                                                                                        (
+                                                                                            prev,
+                                                                                        ) => {
+                                                                                            const newMeals =
+                                                                                                [
+                                                                                                    ...prev,
+                                                                                                ]
+                                                                                            newMeals[
+                                                                                                index
+                                                                                            ].Recipes[
+                                                                                                recIndex
+                                                                                            ].Ingredients[
+                                                                                                ingIndex
+                                                                                            ] =
+                                                                                                {
+                                                                                                    ...value,
+
+                                                                                                    Amount:
+                                                                                                        ingredient.Amount ??
+                                                                                                        100,
+                                                                                                }
+                                                                                            newMeals[
+                                                                                                index
+                                                                                            ] =
+                                                                                                calculateMealNutrition(
+                                                                                                    newMeals[
+                                                                                                        index
+                                                                                                    ],
+                                                                                                )
+                                                                                            return newMeals
+                                                                                        },
+                                                                                    )
+                                                                                }
+                                                                            }}
+                                                                            renderInput={(
+                                                                                params,
+                                                                            ) => (
+                                                                                <TextField
+                                                                                    {...params}
+                                                                                    label={
+                                                                                        ingredient.Name ||
+                                                                                        "Ingredient #" +
+                                                                                            (ingIndex +
+                                                                                                1)
+                                                                                    }
+                                                                                    onChange={
+                                                                                        handleIngredientSearch
+                                                                                    }
+                                                                                    slotProps={{
+                                                                                        input: {
+                                                                                            ...params.InputProps,
+                                                                                            type: "search",
+                                                                                        },
+                                                                                    }}
+                                                                                />
+                                                                            )}
+                                                                        />
+                                                                    </Stack>
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <TextField
+                                                                        label="Amount"
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) => {
+                                                                            const amount =
+                                                                                parseInt(
+                                                                                    e
+                                                                                        .target
+                                                                                        .value,
+                                                                                ) ||
+                                                                                0
                                                                             setMeals(
                                                                                 (
                                                                                     prev,
@@ -993,14 +1193,8 @@ const CalculateMeal: React.FC = () => {
                                                                                         recIndex
                                                                                     ].Ingredients[
                                                                                         ingIndex
-                                                                                    ] =
-                                                                                        {
-                                                                                            ...value,
-
-                                                                                            Amount:
-                                                                                                ingredient.Amount ??
-                                                                                                100,
-                                                                                        }
+                                                                                    ].Amount =
+                                                                                        amount
                                                                                     newMeals[
                                                                                         index
                                                                                     ] =
@@ -1012,553 +1206,235 @@ const CalculateMeal: React.FC = () => {
                                                                                     return newMeals
                                                                                 },
                                                                             )
-                                                                        }
-                                                                    }}
-                                                                    renderInput={(
-                                                                        params,
-                                                                    ) => (
-                                                                        <TextField
-                                                                            {...params}
-                                                                            label={
-                                                                                ingredient.Name ||
-                                                                                "Ingredient #" +
-                                                                                    (ingIndex +
-                                                                                        1)
-                                                                            }
-                                                                            onChange={
-                                                                                handleIngredientSearch
-                                                                            }
-                                                                            slotProps={{
-                                                                                input: {
-                                                                                    ...params.InputProps,
-                                                                                    type: "search",
-                                                                                },
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                />
-                                                            </Stack>
-                                                        </div>
-                                                        <div className="flex flex-col gap-1">
-                                                            <TextField
-                                                                label="Amount"
-                                                                onChange={(
-                                                                    e,
-                                                                ) => {
-                                                                    const amount =
-                                                                        parseInt(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        ) || 0
-                                                                    setMeals(
-                                                                        (
-                                                                            prev,
-                                                                        ) => {
-                                                                            const newMeals =
-                                                                                [
-                                                                                    ...prev,
+                                                                        }}
+                                                                        slotProps={{
+                                                                            input: {
+                                                                                type: "number",
+                                                                                value: meals[
+                                                                                    index
                                                                                 ]
-                                                                            newMeals[
-                                                                                index
-                                                                            ].Recipes[
-                                                                                recIndex
-                                                                            ].Ingredients[
-                                                                                ingIndex
-                                                                            ].Amount =
-                                                                                amount
-                                                                            newMeals[
-                                                                                index
-                                                                            ] =
-                                                                                calculateMealNutrition(
-                                                                                    newMeals[
-                                                                                        index
-                                                                                    ],
-                                                                                )
-                                                                            return newMeals
-                                                                        },
-                                                                    )
-                                                                }}
-                                                                slotProps={{
-                                                                    input: {
-                                                                        type: "number",
-                                                                        value: meals[
-                                                                            index
-                                                                        ]
-                                                                            .Recipes[
-                                                                            recIndex
-                                                                        ]
-                                                                            .Ingredients[
-                                                                            ingIndex
-                                                                        ]
-                                                                            .Amount,
-                                                                        onFocus:
-                                                                            (
-                                                                                e,
-                                                                            ) => {
-                                                                                e.target.select()
+                                                                                    .Recipes[
+                                                                                    recIndex
+                                                                                ]
+                                                                                    .Ingredients[
+                                                                                    ingIndex
+                                                                                ]
+                                                                                    .Amount,
+                                                                                onFocus:
+                                                                                    (
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        e.target.select()
+                                                                                    },
                                                                             },
-                                                                    },
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        {recipe.Ingredients
-                                                            .length > 1 && (
-                                                            <Button
-                                                                variant="contained"
-                                                                className="bg-DarkGreen! hover:bg-DarkGreen/80"
-                                                                onClick={() =>
-                                                                    handleRemoveIngredient(
-                                                                        index,
-                                                                        recIndex,
-                                                                        ingIndex,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Minus
-                                                                    size={24}
-                                                                    color="#FAF9F6"
-                                                                    weight="regular"
-                                                                ></Minus>
-                                                            </Button>
-                                                        )}
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                {recipe
+                                                                    .Ingredients
+                                                                    .length >
+                                                                    1 && (
+                                                                    <Button
+                                                                        variant="contained"
+                                                                        className="bg-LightGreen! hover:bg-LightGreen/80!"
+                                                                        onClick={() =>
+                                                                            handleRemoveIngredient(
+                                                                                index,
+                                                                                recIndex,
+                                                                                ingIndex,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <Minus
+                                                                            size={
+                                                                                24
+                                                                            }
+                                                                            color="#FAF9F6"
+                                                                            weight="regular"
+                                                                        ></Minus>
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                    <div className="flex w-full items-center justify-end">
+                                                        <Button
+                                                            variant="contained"
+                                                            className="bg-Cream! hover:bg-Cream/80! text-DarkGreen! gap-2 text-sm! font-medium! normal-case!"
+                                                            onClick={() =>
+                                                                handleAddNewIngredient(
+                                                                    index,
+                                                                    recIndex,
+                                                                )
+                                                            }
+                                                        >
+                                                            Add Ingredient
+                                                            <Plus
+                                                                size={18}
+                                                                color="#395B64"
+                                                                weight="regular"
+                                                            ></Plus>
+                                                        </Button>
                                                     </div>
-                                                ),
-                                            )}
-                                            <Button
-                                                variant="contained"
-                                                className="bg-DarkGreen! hover:bg-DarkGreen/80"
-                                                onClick={() =>
-                                                    handleAddNewIngredient(
-                                                        index,
-                                                        recIndex,
-                                                    )
-                                                }
-                                            >
-                                                Add Ingredient
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-                        </form>
-                    </div>
-                    <div className="flex w-full min-w-2/3 flex-col gap-3">
-                        <h1 className="text-DarkGreen font-Poppins pb-5 text-4xl">
-                            Result
-                        </h1>
-                        {meals.map((meal, index: number) => (
-                            <div
-                                key={meal.Name + index}
-                                className="flex w-full flex-col gap-1"
-                            >
-                                <div className="flex w-full justify-between">
-                                    <h3
-                                        // onClick={() => {
-                                        //     setOpen(true)
-                                        //     setChosenMeal(meal)
-                                        // }}
-                                        className="text-DarkGreen font-Poppins flex shrink-0 items-center pr-4 text-2xl"
-                                    >
-                                        {mealName[index] ?? meal.Name}
-                                    </h3>
-                                    <div className="flex gap-3 overflow-x-scroll py-2">
-                                        <TextField
-                                            disabled
-                                            label="Amount"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={
-                                                calculateMealNutrition(meal)
-                                                    .Amount + "g"
-                                            }
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Water"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={
-                                                meal.Water && meal.Water > 0
-                                                    ? meal.Water + "ml"
-                                                    : "-"
-                                            }
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Meal Kcal %"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={
-                                                planCalories > 0 && meal.Kcal
-                                                    ? (
-                                                          ((meal.Kcal ?? 0) /
-                                                              planCalories) *
-                                                          100
-                                                      ).toFixed(1) + "%"
-                                                    : "0%"
-                                            }
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Calories"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={(meal.Kcal ?? 0).toFixed(4)}
-                                            slotProps={{
-                                                input: {
-                                                    type: "number",
-                                                },
-                                            }}
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Protein"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={(
-                                                meal.Protein_total ?? 0
-                                            ).toFixed(4)}
-                                            slotProps={{
-                                                input: {
-                                                    type: "number",
-                                                },
-                                            }}
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Fat"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={(
-                                                meal.Fat_total ?? 0
-                                            ).toFixed(4)}
-                                            slotProps={{
-                                                input: {
-                                                    type: "number",
-                                                },
-                                            }}
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Carbohydrates"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={(
-                                                meal.Carbohydrates_total ?? 0
-                                            ).toFixed(4)}
-                                            slotProps={{
-                                                input: {
-                                                    type: "number",
-                                                },
-                                            }}
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Glycemic Load"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={(
-                                                meal.Glycemic_load ?? 0
-                                            ).toFixed(4)}
-                                            slotProps={{
-                                                input: {
-                                                    type: "number",
-                                                },
-                                            }}
-                                        />
-                                        <TextField
-                                            disabled
-                                            label="Units"
-                                            className="max-w-[120px]! min-w-20! p-0!"
-                                            value={"-"}
-                                            slotProps={{
-                                                input: {
-                                                    type: "string",
-                                                },
-                                            }}
-                                        />
+                                                </div>
+                                            ),
+                                        )}
+                                        <h5 className="text-DarkGreen font-Poppins flex w-full justify-end text-xl font-medium">
+                                            Total Meal Calories:{" "}
+                                            {meal.Kcal?.toFixed(2)}
+                                        </h5>
                                     </div>
+                                </form>
+                            </div>
+                            <div className="just flex w-full flex-row">
+                                <div className="bg-Cream/40 flex h-full shrink-0 items-center border border-r-0 border-slate-300 px-4">
+                                    <span className="text-DarkGreen font-Poppins text-lg font-medium">
+                                        {meal.Name}
+                                    </span>
                                 </div>
-                                {meal.Recipes.map((recipe, recipeIndex) => (
-                                    <div
-                                        key={`${meal.Name}-recipe-${recipeIndex}`}
-                                        className="mt-1 flex w-full flex-col gap-3 overflow-x-scroll"
-                                    >
-                                        <h3 className="text-DarkGreen font-Poppins text-xl">
-                                            {recipe.Name ||
-                                                `Recipe #${recipeIndex + 1}`}
-                                        </h3>
-                                        {recipe.Ingredients.map(
-                                            (ingredient, ingIndex) => (
+                                <div className="flex w-full flex-col">
+                                    <div className="flex h-20 w-full bg-white">
+                                        <div className="w-full max-w-1/3 border-1 border-r-0 border-slate-300"></div>
+                                        <div className="text-DarkGreen font-Poppins flex w-full flex-row items-center justify-around border-1 border-slate-300 px-4 py-2 font-semibold">
+                                            <span>Amount</span>
+                                            <span>Water</span>
+                                            <span>Meal Kcal %</span>
+                                            <span>Calories</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex h-full flex-col bg-white">
+                                        {meal.Recipes.map(
+                                            (recipe, recipeIndex) => (
                                                 <div
-                                                    key={`${recipe.Name}-ingredient-${ingIndex}`}
-                                                    className="flex items-center justify-between gap-3"
+                                                    className="flex h-full w-full"
+                                                    key={recipeIndex}
                                                 >
-                                                    <div className="flex flex-col justify-center">
-                                                        <span className="text-DarkGreen font-Poppins">
-                                                            {ingredient.Name ||
-                                                                `Ingredient #${ingIndex + 1}`}
+                                                    <div
+                                                        key={
+                                                            recipeIndex +
+                                                            recipe.Name +
+                                                            meal.Name
+                                                        }
+                                                        className="text-DarkGreen flex h-full w-full max-w-1/3 items-center border border-t-0 border-r-0 border-slate-300 bg-white"
+                                                    >
+                                                        <span className="text-DarkGreen font-Poppins w-full max-w-[120px] px-5">
+                                                            {recipe.Name || "-"}
                                                         </span>
+                                                        <div className="flex h-full w-full flex-col">
+                                                            {recipe.Ingredients.map(
+                                                                (
+                                                                    ingredient,
+                                                                    ingIndex,
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            ingIndex +
+                                                                            recipe.Name +
+                                                                            ingredient.Name
+                                                                        }
+                                                                        className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-white px-4"
+                                                                    >
+                                                                        {ingredient.Name ===
+                                                                        ""
+                                                                            ? "-"
+                                                                            : ingredient.Name}
+                                                                    </div>
+                                                                ),
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="just flex gap-3 overflow-x-scroll py-2">
-                                                        <TextField
-                                                            disabled
-                                                            label="Amount"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={
-                                                                ingredient.Amount +
-                                                                "g"
-                                                            }
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Water"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={
-                                                                ingredient.Water
-                                                                    ? ingredient.Water +
-                                                                      "ml"
-                                                                    : "-"
-                                                            }
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Meal Kcal %"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={
-                                                                ingredient.Kcal +
-                                                                "%"
-                                                            }
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Calories"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={(
-                                                                ingredient.Kcal ??
-                                                                0
-                                                            ).toFixed(4)}
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Protein"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={(
-                                                                calculateTotalNutrition()
-                                                                    .Protein_total ??
-                                                                0
-                                                            ).toFixed(4)}
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Fat"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={(
-                                                                calculateTotalNutrition()
-                                                                    .Fat_total ??
-                                                                0
-                                                            ).toFixed(4)}
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Carbohydrates"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={(
-                                                                calculateTotalNutrition()
-                                                                    .Carbohydrates_total ??
-                                                                0
-                                                            ).toFixed(4)}
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Glycemic Load"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={
-                                                                calculateTotalNutrition().Glycemic_load?.toFixed(
-                                                                    4,
-                                                                ) ?? "0.0000"
-                                                            }
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
-                                                        <TextField
-                                                            disabled
-                                                            label="Units"
-                                                            className="max-w-[120px]! min-w-20! p-0!"
-                                                            value={
-                                                                ingredient.Amount &&
-                                                                ingredient.Volume_per_Unit
-                                                                    ? ingredient.Amount /
-                                                                          ingredient.Volume_per_Unit +
-                                                                      "ml"
-                                                                    : "-"
-                                                            }
-                                                            slotProps={{
-                                                                input: {
-                                                                    type: "string",
-                                                                },
-                                                            }}
-                                                        />
+                                                    <div className="flex w-full flex-col items-center border border-t-0 border-r-0 border-l-0 border-slate-300">
+                                                        {recipe.Ingredients.map(
+                                                            (
+                                                                ingredient,
+                                                                ingIndex,
+                                                            ) => (
+                                                                <div
+                                                                    key={
+                                                                        ingIndex +
+                                                                        recipe.Name +
+                                                                        ingredient.Name
+                                                                    }
+                                                                    className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-white px-4"
+                                                                >
+                                                                    <span className="w-full text-center">
+                                                                        {ingredient.Amount &&
+                                                                        ingredient.Amount >
+                                                                            0
+                                                                            ? ingredient.Amount +
+                                                                              "g"
+                                                                            : "-"}
+                                                                    </span>
+                                                                    <span className="w-full text-center">
+                                                                        {Number(
+                                                                            ingredient.Water,
+                                                                        ) > 0 &&
+                                                                        (ingredient.Amount ??
+                                                                            0) >
+                                                                            0
+                                                                            ? (
+                                                                                  (Number(
+                                                                                      ingredient.Water,
+                                                                                  ) *
+                                                                                      (ingredient.Amount ??
+                                                                                          0)) /
+                                                                                  100
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              ) +
+                                                                              "ml"
+                                                                            : "-"}
+                                                                    </span>
+                                                                    <span className="w-full text-center">
+                                                                        {planCalories >
+                                                                            0 &&
+                                                                        Number(
+                                                                            ingredient.Kcal,
+                                                                        ) > 0 &&
+                                                                        (ingredient.Amount ??
+                                                                            0) >
+                                                                            0
+                                                                            ? (
+                                                                                  (Number(
+                                                                                      ingredient.Kcal,
+                                                                                  ) *
+                                                                                      (ingredient.Amount ??
+                                                                                          0)) /
+                                                                                  planCalories
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              ) +
+                                                                              "%"
+                                                                            : "-"}
+                                                                    </span>
+                                                                    <span className="w-full text-center">
+                                                                        {meal.Kcal &&
+                                                                        meal.Kcal >
+                                                                            0 &&
+                                                                        ingredient.Kcal
+                                                                            ? (
+                                                                                  (Number(
+                                                                                      ingredient.Kcal,
+                                                                                  ) *
+                                                                                      ingredient.Amount!) /
+                                                                                  100
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              )
+                                                                            : "-"}
+                                                                    </span>
+                                                                </div>
+                                                            ),
+                                                        )}
                                                     </div>
                                                 </div>
                                             ),
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        ))}
-                        <div className="flex w-full flex-col gap-3 py-4">
-                            <div className="bg-DarkGreen h-[3px] w-full"></div>
-                            <div className="flex w-full items-center justify-between">
-                                <h3 className="text-DarkGreen font-Poppins flex items-center pr-4 text-2xl">
-                                    Total
-                                </h3>
-                                <div className="flex w-full gap-3 overflow-x-scroll py-2">
-                                    <TextField
-                                        disabled
-                                        label="Amount"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Amount
-                                                ? calculateTotalNutrition()
-                                                      .Amount + "g"
-                                                : "0"
-                                        }
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Water"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            planCalories > 0 &&
-                                            calculateTotalNutrition().Water
-                                                ? calculateTotalNutrition()
-                                                      .Water
-                                                : "-"
-                                        }
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Meal Kcal %"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            planCalories > 0 &&
-                                            calculateTotalNutrition().Kcal
-                                                ? (
-                                                      ((calculateTotalNutrition()
-                                                          .Kcal ?? 0) /
-                                                          planCalories) *
-                                                      100
-                                                  ).toFixed(1) + "%"
-                                                : "0%"
-                                        }
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Calories"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Kcal?.toFixed(
-                                                4,
-                                            ) ?? "0.0000"
-                                        }
-                                        slotProps={{
-                                            input: {
-                                                type: "number",
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Protein"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Protein_total?.toFixed(
-                                                4,
-                                            ) ?? "0.0000"
-                                        }
-                                        slotProps={{
-                                            input: {
-                                                type: "number",
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Fat"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Fat_total?.toFixed(
-                                                4,
-                                            ) ?? "0.0000"
-                                        }
-                                        slotProps={{
-                                            input: {
-                                                type: "number",
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Carbohydrates"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Carbohydrates_total?.toFixed(
-                                                4,
-                                            ) ?? "0.0000"
-                                        }
-                                        slotProps={{
-                                            input: {
-                                                type: "number",
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Glycemic Load"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={
-                                            calculateTotalNutrition().Glycemic_load?.toFixed(
-                                                4,
-                                            ) ?? "0.0000"
-                                        }
-                                        slotProps={{
-                                            input: {
-                                                type: "string",
-                                            },
-                                        }}
-                                    />
-                                    <TextField
-                                        disabled
-                                        label="Units"
-                                        className="max-w-[120px]! min-w-20! p-0!"
-                                        value={"-"}
-                                        slotProps={{
-                                            input: {
-                                                type: "string",
-                                            },
-                                        }}
-                                    />
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </>
