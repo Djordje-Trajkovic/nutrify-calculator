@@ -53,13 +53,12 @@ function flattenRelationArray<T>(
 
 function flattenMedia(media: any) {
     if (!media) return null
-    if (media.data) media = media.data
     return {
         id: media.id,
-        url: media.attributes.url,
-        name: media.attributes.name,
-        mime: media.attributes.mime,
-        size: media.attributes.size,
+        url: media.url ?? "",
+        name: media.name,
+        mime: media.mime,
+        size: media.size,
     }
 }
 
@@ -808,7 +807,7 @@ export async function getRecipeById(id: number): Promise<Recipe | null> {
         category_cuisine_types: flattenRelationArray(
             data.category_cuisine_types?.data || [],
         ),
-        Image: flattenMedia(data.Image?.data),
+        Image: flattenMedia(data.Image),
     }
 
     return recipe
@@ -836,7 +835,10 @@ export async function getAllOrSearchByNameRecipes(
     const recipes: Recipe[] = data.map((item: any) => {
         const ingredients: Ingredient[] = (item.Ingredients || []).map(
             (ing: any) => {
+                if (!ing.ingredient) return {} as Ingredient
                 const ingData = ing.ingredient
+
+                console.log(ingData, "ingData from api")
 
                 return {
                     Name: ingData.Name,
@@ -907,7 +909,7 @@ export async function getAllOrSearchByNameRecipes(
             category_cuisine_types: flattenRelationArray(
                 item.attributes?.category_cuisine_types || [],
             ),
-            Image: flattenMedia(item?.Image?.data),
+            Image: flattenMedia(item?.Image),
         }
     })
 

@@ -55,13 +55,13 @@ export default function PDFMealTable({ meals, fields }: Props) {
 
       {/* Body */}
       {meals.map((meal) => {
-        const mealRowSpan = meal.Recipes.reduce(
-          (sum, r) => sum + r.Ingredients.length,
-          0
-        );
+        // const mealRowSpan = meal.Recipes.reduce(
+        //   (sum, r) => sum + r.Ingredients.length,
+        //   0
+        // );
 
         return meal.Recipes.map((recipe, recipeIndex) => {
-          const recipeRowSpan = recipe.Ingredients.length;
+          // const recipeRowSpan = recipe.Ingredients.length;
 
           return recipe.Ingredients.map((ingredient, ingredientIndex) => (
             <View style={styles.row} key={`${meal.Name}-${recipe.Name}-${ingredient?.Name}`}>

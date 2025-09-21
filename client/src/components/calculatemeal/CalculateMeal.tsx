@@ -1,6 +1,6 @@
 "use client"
-import ReactToPDF, { usePDF } from "react-to-pdf"
-import { Ingredient, Meal, NutritionalFields, Recipe } from "@/utils/types"
+import { usePDF } from "react-to-pdf"
+import { Ingredient, Meal, Recipe } from "@/utils/types"
 import { Autocomplete, Button, Modal, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
@@ -621,7 +621,6 @@ const CalculateMeal: React.FC = () => {
                                 "Cholesterol",
                                 "Atherogenic_index",
                                 "Glycemic_index",
-                                "Glycemic_load",
                             ]}
                         />
                         <MealTable
@@ -689,7 +688,7 @@ const CalculateMeal: React.FC = () => {
                         <Plus size={18} color="#FAF9F6" weight="bold" />
                     </Button>
                 </div>
-                <div className="flex w-full justify-between gap-4 pb-10">
+                <div className="flex w-full flex-wrap lg:flex-nowrap justify-between gap-4 pb-10">
                     <div className="flex gap-10 rounded-2xl bg-white p-5 shadow-md">
                         <TextField
                             label="Meal Plan Name"
@@ -741,10 +740,10 @@ const CalculateMeal: React.FC = () => {
                 <div className="flex w-full flex-col gap-10">
                     {meals.map((meal, index) => (
                         <div
-                            className="flex w-full flex-row gap-10 bg-white p-10 shadow-md"
+                            className="flex w-full flex-wrap lg:flex-nowrap gap-10 bg-white p-10 shadow-md"
                             key={index + meal.Name}
                         >
-                            <div className="flex w-full max-w-1/3 flex-col gap-10">
+                            <div className="flex w-full lg:max-w-1/3 flex-col gap-10">
                                 <form className="text-DarkGreen flex flex-col gap-10">
                                     <div className="flex w-full flex-col items-start gap-3">
                                         <div className="flex w-full">

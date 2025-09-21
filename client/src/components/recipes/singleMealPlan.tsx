@@ -1,4 +1,4 @@
-import { ForkKnife } from "@phosphor-icons/react"
+import { ForkKnife, Plus } from "@phosphor-icons/react"
 import Image from "next/image"
 
 import { Recipe } from "@/utils/types"
@@ -9,7 +9,6 @@ import ParametarsIcon from "../util/ParametarsIcon"
 
 import avatarImage from "../../../public/avatarImage.jpeg"
 import { useCartModal as useCartModalCtx } from "./cartModalCtx"
-
 
 type SingleMealPlanProp = {
     recipe: Recipe
@@ -27,19 +26,19 @@ const SingleMealPlan: React.FC<SingleMealPlanProp> = ({ recipe }) => {
     const { addRecipeToPlan } = useCartModalCtx()
 
     const recomended = false
-    
+
     //console.log(recipe, "singelRecipe")
-
-
-  
-
 
     return (
         <div className="shadow-Combined font-Poppins flex h-full cursor-pointer flex-col justify-between gap-[10px] rounded-xl bg-[#FFFFFF] p-[24px] text-black">
             <div className="relative h-[190px] w-full overflow-clip rounded-xl">
                 {recipe?.Image ? (
                     <Image
-                        src={typeof recipe.Image === "string" ? recipe.Image : recipe.Image?.url ?? ""}
+                        src={
+                            typeof recipe.Image === "string"
+                                ? recipe.Image
+                                : (recipe.Image?.url ?? "")
+                        }
                         alt={recipe.Name}
                         fill
                         className="object-cover"
@@ -54,7 +53,7 @@ const SingleMealPlan: React.FC<SingleMealPlanProp> = ({ recipe }) => {
                 {recomended && (
                     <div className="absolute top-2 right-2 h-10 w-10 overflow-hidden rounded-full border-2 border-white">
                         <Image
-                            src={ avatarImage} // if recomended by nutricionist show his photo 
+                            src={avatarImage} // if recomended by nutricionist show his photo
                             alt={"Author"}
                             width={40}
                             height={40}
@@ -116,8 +115,11 @@ const SingleMealPlan: React.FC<SingleMealPlanProp> = ({ recipe }) => {
                 </div>
             </div>
             <div className="my-2 h-[1px] w-full bg-[#D9D9D9]"></div>
-            <button className="bg-LightGreen flex h-[40px] w-full items-center justify-center rounded-lg px-[24px] py-[8px] text-sm text-[#FFFFFF]" onClick={()=>addRecipeToPlan(recipe)}>
-                Add Meall +
+            <button
+                className="bg-LightGreen flex h-[40px] w-full items-center justify-center rounded-lg px-[24px] py-[8px] text-sm text-[#FFFFFF]"
+                onClick={() => addRecipeToPlan(recipe)}
+            >
+                Add Meal <Plus className="ml-2" size={14} weight="bold" />
             </button>
         </div>
     )
