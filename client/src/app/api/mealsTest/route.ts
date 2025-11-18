@@ -1,95 +1,17 @@
 import { NextResponse } from "next/server"
+import {
+    MealType,
+    MealData as Meal,
+    Training,
+    WaterConsumption,
+    DailyPlan,
+} from "@/utils/types"
 
 /// Only for testing since i dont have database yet
-export interface GroceryItem {
-    name: string
-    amount: string
-    groceryId: number
-}
-
-export interface Meal {
-    id: number
-    name: string
-    description: string
-    calories: number
-    proteins: number
-    fats: number
-    carbohydrates: number
-    grocerys: GroceryItem[]
-    image: string | null
-    authorUserId: number | string | null
-    preparationVideoUrl?: string | null
-    detailePreparation?: PreperationType[] | null | undefined
-}
-
-export interface PreperationType {
-    stepTitle?: string
-    instructions?: string[]
-}
-
-export interface Exercise {
-    id: number | string
-    name: string
-    sets: number
-    reps: number | string
-    pause?: string | number
-    description: string
-    imageHero?: string | null
-
-    musslceGroupTargetImage?: null | string
-    movmentImage?: null | string
-    videoLink?: null | string
-    musscleGroupTarget?: {
-        name: string
-        description: string
-    }[]
-}
-
-export interface Training {
-    id: number
-    name: string
-    caloriesBurned: number
-    duration: string | number
-    exercises: Exercise[]
-    image: string | null
-    description: string
-    authorUserId: number | string | null
-    longDescription?: string
-}
-
 interface User {
     personId: number
     name: string
     subscribed: boolean
-}
-
-export enum MealType {
-    Breakfast = "breakfast",
-    Lunch = "lunch",
-    Dinner = "dinner",
-}
-
-export interface WaterConsumption {
-    planedWaterConsumption: number
-    currentWatterConsumption: number
-}
-
-export interface DailyPlan {
-    personId: number
-    name: string
-    mealPlan: {
-        meal: Meal
-        mealType: MealType
-        time: string
-    }[]
-    waterConsumption?: WaterConsumption | null
-
-    trainingPlan:
-        | {
-              training: Training
-              time: string
-          }[]
-        | null
 }
 
 type DailyPlansResponse = DailyPlan[]

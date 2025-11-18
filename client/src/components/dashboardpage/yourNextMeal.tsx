@@ -1,6 +1,6 @@
 "use client"
 
-import { Meal, MealType } from "@/app/api/mealsTest/route"
+import { MealData as Meal, MealType } from "@/utils/types"
 import { useState, useEffect } from "react"
 import ParametarsIcon from "../util/ParametarsIcon"
 import Link from "next/link"

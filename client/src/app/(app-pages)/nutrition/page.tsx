@@ -4,7 +4,7 @@ import SideMenu from "@/components/util/SideMenu"
 import Header from "@/components/util/AppHeader"
 
 import DashboardContainer from "@/components/util/AppContainer"
-import { DailyPlan } from "@/app/api/mealsTest/route"
+import { DailyPlan } from "@/utils/types"
 
 import { NutritionPageCtxProvider } from "@/components/nutritionpage/nutritionPageProvider"
 import NutritionPageClientWrapper from "@/components/nutritionpage/nutritionPageClientWrapper"

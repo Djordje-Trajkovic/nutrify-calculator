@@ -1,5 +1,5 @@
 "use client"
-import { Meal, MealType, WaterConsumption } from "@/app/api/mealsTest/route"
+import { MealData as Meal, MealType, WaterConsumption } from "@/utils/types"
 import { createContext, useContext, useState, ReactNode } from "react"
 
 type NutritionPageCtxType = {

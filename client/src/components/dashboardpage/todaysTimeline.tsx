@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import ParametarsIcon from "../util/ParametarsIcon"
 
-import { Meal, MealType, Training } from "@/app/api/mealsTest/route"
+import { MealData as Meal, MealType, Training } from "@/utils/types"
 import SingleActivityFromTimeline from "./singleActivityFromTimeline"
 import TodayTimelineLoader from "../skeletonLoaders/todayTimelineLoader"
 

@@ -104,10 +104,11 @@ const ExerciseEditModal= () => {
 
         const updatedTraining = {
             ...singleExercise,
+            id: singleExercise?.id || "",
             name: exerciseName,
             description: exerciseDescription,
             pause: exercisePauseDuration,
-            sets: exerciseSets,
+            sets: typeof exerciseSets === 'string' ? parseInt(exerciseSets) || 0 : exerciseSets,
             reps: exerciseReps,
             imageHero: exerciseImageHero,
         }

@@ -100,7 +100,7 @@ const weeksMeals = [
     },
 ]
 
-import { GroceryItem } from "@/app/api/mealsTest/route"
+import { GroceryItem } from "@/utils/types"
 import { useEffect, useState } from "react"
 import ProgressBar from "../util/ProgressBar"
 import { Checkbox } from "@mui/material"

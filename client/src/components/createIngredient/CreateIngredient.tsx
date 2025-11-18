@@ -7,56 +7,56 @@ import axios from "axios"
 
 const CreateIngredient: React.FC = () => {
     const [ingredient, setIngredient] = useState<Ingredient>({
-        name: "",
-        code: "",
-        amount: 100,
+        Name: "",
+        Code: "",
+        Amount: 100,
     })
     const [image, setImage] = useState<File | null>(null)
 
     // Grouping fields into categories
     const proteinFields: (keyof Ingredient)[] = [
-        "protein_plant",
-        "protein_animal",
-        "protein_total",
+        "Protein_plant",
+        "Protein_animal",
+        "Protein_total",
     ]
     const carbohydrateFields: (keyof Ingredient)[] = [
-        "carbohydrates_mono",
-        "carbohydrates_poli",
-        "carbohydrates_total",
+        "Carbohydrates_mono",
+        "Carbohydrates_poli",
+        "Carbohydrates_total",
     ]
     const fatFields: (keyof Ingredient)[] = [
-        "fat_saturated",
-        "fat_unsaturated",
-        "fat_total",
+        "Fat_saturated",
+        "Fat_unsaturated",
+        "Fat_total",
     ]
     const mineralFields: (keyof Ingredient)[] = [
-        "mineral_Na",
-        "mineral_K",
-        "mineral_Ca",
-        "mineral_Mg",
-        "mineral_P",
-        "mineral_Fe",
-        "mineral_Zn",
-        "mineral_Cu",
+        "Mineral_Na",
+        "Mineral_K",
+        "Mineral_Ca",
+        "Mineral_Mg",
+        "Mineral_P",
+        "Mineral_Fe",
+        "Mineral_Zn",
+        "Mineral_Cu",
     ]
     const vitaminFields: (keyof Ingredient)[] = [
-        "vitamin_RE",
-        "vitamin_B1",
-        "vitamin_B2",
-        "vitamin_B6",
-        "vitamin_PP",
-        "vitamin_C",
-        "vitamin_E",
+        "Vitamin_RE",
+        "Vitamin_B1",
+        "Vitamin_B2",
+        "Vitamin_B6",
+        "Vitamin_PP",
+        "Vitamin_C",
+        "Vitamin_E",
     ]
     const otherFields: (keyof Ingredient)[] = [
-        "amount",
-        "kcal",
-        "cholesterol",
-        "ashes",
-        "cellulose",
-        "glycemic_index",
-        "glycemic_load",
-        "atherogenic_index",
+        "Amount",
+        "Kcal",
+        "Cholesterol",
+        "Ashes",
+        "Cellulose",
+        "Glycemic_index",
+        "Glycemic_load",
+        "Atherogenic_index",
     ]
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,13 +113,13 @@ const CreateIngredient: React.FC = () => {
                                 placeholder="Enter name"
                                 title="Name"
                                 type="text"
-                                value={ingredient.name ?? ""}
+                                value={ingredient.Name ?? ""}
                                 required
                                 customWidth="w-[300px]"
                                 onChange={(e) =>
                                     setIngredient({
                                         ...ingredient,
-                                        name: e.target.value,
+                                        Name: e.target.value,
                                     })
                                 }
                             />
@@ -127,13 +127,13 @@ const CreateIngredient: React.FC = () => {
                                 placeholder="Enter code"
                                 title="Code"
                                 type="text"
-                                value={ingredient.code ?? ""}
+                                value={ingredient.Code ?? ""}
                                 required
                                 customWidth="w-[300px]"
                                 onChange={(e) =>
                                     setIngredient({
                                         ...ingredient,
-                                        code: e.target.value,
+                                        Code: e.target.value,
                                     })
                                 }
                             />

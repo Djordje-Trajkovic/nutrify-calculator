@@ -1,6 +1,6 @@
 "use client"
 
-import { GroceryItem } from "@/app/api/mealsTest/route"
+import { GroceryItem } from "@/utils/types"
 import { useEffect, useState } from "react"
 import GrocerysForNextMealLoader from "../skeletonLoaders/grocerysForNextMealLoader"
 

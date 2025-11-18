@@ -1,6 +1,6 @@
 "use client"
 
-import { WaterConsumption as WaterConsumptionType } from "@/app/api/mealsTest/route"
+import { WaterConsumption as WaterConsumptionType } from "@/utils/types"
 import { useState, useEffect } from "react"
 
 import Image from "next/image"

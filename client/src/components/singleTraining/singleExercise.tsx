@@ -1,4 +1,4 @@
-import { Exercise } from "@/app/api/mealsTest/route"
+import { Exercise } from "@/utils/types"
 import { ArrowDown, Barbell, Eraser } from "@phosphor-icons/react"
 
 import Image from "next/image"

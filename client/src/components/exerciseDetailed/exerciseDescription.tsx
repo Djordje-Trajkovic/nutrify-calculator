@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 
-import { Exercise } from "@/app/api/mealsTest/route"
+import { Exercise } from "@/utils/types"
 import React from "react"
 import ExerciseDescriptionLoader from "../skeletonLoaders/exerciseDescriptionLoader"
 

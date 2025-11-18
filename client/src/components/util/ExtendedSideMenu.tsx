@@ -2,8 +2,6 @@
 import React, { useEffect } from "react"
 import SideMenuOption from "./SideMenuOption"
 import {
-    ArrowFatUp,
-    BowlFood,
     CaretLeft,
     CaretRight,
     Carrot,

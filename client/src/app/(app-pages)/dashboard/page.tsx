@@ -14,7 +14,7 @@ import {
     mealsSortedByTime,
     trainingSortedByTime,
 } from "@/utils/activitySortByTime"
-import { DailyPlan } from "@/app/api/mealsTest/route"
+import { DailyPlan } from "@/utils/types"
 // import {Meal, MealType, Training} from "@/app/api/mealsTest/route"
 import { redirect } from "next/navigation"
 

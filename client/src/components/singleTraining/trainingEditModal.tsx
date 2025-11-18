@@ -101,12 +101,15 @@ const TrainingEditModal = () => {
 
         const updatedTraining = {
             ...nextTraining?.training,
+            id: nextTraining?.training?.id || 0,
             name: trainingName,
             description: trainingDescription,
             longDescription: trainingLongDescription,
-            duration: trainingTimeDuration,
-            caloriesBurned: trainingCalorisBurned,
+            duration: typeof trainingTimeDuration === 'string' ? parseInt(trainingTimeDuration) || 0 : trainingTimeDuration,
+            caloriesBurned: typeof trainingCalorisBurned === 'string' ? parseInt(trainingCalorisBurned) || 0 : trainingCalorisBurned,
             image: trainingImage,
+            exercises: nextTraining?.training?.exercises || [],
+            authorUserId: nextTraining?.training?.authorUserId || null,
         }
 
         handleCloseModal()

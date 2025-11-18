@@ -1,6 +1,6 @@
 "use client"
 
-import { Training } from "@/app/api/mealsTest/route"
+import { Training } from "@/utils/types"
 import { useState, useEffect } from "react"
 
 //import TrainingImage from "../../../public/trainingImage.png"

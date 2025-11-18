@@ -1,5 +1,5 @@
 // utils/sortMeals.ts
-import { Meal, MealType, Training } from "@/app/api/mealsTest/route"
+import { MealData as Meal, MealType, Training } from "@/utils/types"
 
 export function mealsSortedByTime(
     nextMeals: { meal: Meal; mealType: MealType; time: string }[],

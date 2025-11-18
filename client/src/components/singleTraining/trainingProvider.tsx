@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from "react"
-import { Exercise, Training } from "@/app/api/mealsTest/route"
+import { Exercise, Training } from "@/utils/types"
 
 type TrainingCtxContextType = {
     nextTraining: { training: Training; time: string } | null

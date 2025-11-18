@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 
-import { Meal, MealType } from "@/app/api/mealsTest/route"
+import { MealData as Meal, MealType } from "@/utils/types"
 
 import { useNutritionPageCtx } from "./nutritionPageProvider"
 import SingleActivityFromTimeline from "../dashboardpage/singleActivityFromTimeline"

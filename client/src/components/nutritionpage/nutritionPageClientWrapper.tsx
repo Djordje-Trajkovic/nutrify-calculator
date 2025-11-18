@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import TodaysFoodInteake from "../dashboardpage/todaysFoodIntakes";
 import WaterConsumption from "./waterConsumption";
 import DatePicker from "./datePicker";
-import { DailyPlan } from "@/app/api/mealsTest/route";
+import { DailyPlan } from "@/utils/types";
 import { useNutritionPageCtx } from "./nutritionPageProvider";
 import MealTimeline from "./mealTimeline";
 import MealVitamins from "./mealVitamins";

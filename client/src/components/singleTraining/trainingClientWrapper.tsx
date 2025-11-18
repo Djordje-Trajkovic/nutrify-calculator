@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useTrainingCtx } from "./trainingProvider"
-import { Training } from "@/app/api/mealsTest/route"
+import { Training } from "@/utils/types"
 import TrainingEditModal from "./trainingEditModal"
 import SingleTraining from "./singleTraining"
 import EcerciseTimeline from "./exerciseTimeline"

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 
-import { Exercise } from "@/app/api/mealsTest/route"
+import { Exercise } from "@/utils/types"
 
 import SingleExercise from "../singleTraining/singleExercise"
 
