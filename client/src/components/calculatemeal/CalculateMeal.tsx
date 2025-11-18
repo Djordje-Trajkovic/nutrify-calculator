@@ -4,6 +4,7 @@ import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple } from "@phosphor-icons/react"
+import MealPreview from "./MealPreview"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -571,6 +572,9 @@ const CalculateMeal: React.FC = () => {
                         </div>
                     ))}
                 </div>
+            </div>
+            <div className="mx-auto w-full max-w-7xl px-4 pb-10">
+                <MealPreview meals={meals} />
             </div>
         </>
     )
