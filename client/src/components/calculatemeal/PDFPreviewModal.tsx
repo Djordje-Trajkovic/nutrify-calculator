@@ -1,13 +1,7 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
 import { Modal, Button, CircularProgress } from "@mui/material"
-import {
-    MagnifyingGlassPlus,
-    MagnifyingGlassMinus,
-    X,
-    ArrowsOut,
-    DownloadSimple,
-} from "@phosphor-icons/react"
+import { X, DownloadSimple } from "@phosphor-icons/react"
 import { pdf } from "@react-pdf/renderer"
 import { Meal } from "../../utils/types"
 import PDFDocument from "./PDFDocument"
@@ -19,24 +13,16 @@ type Props = {
     mealPlanName: string
 }
 
-// A4 landscape dimensions in pixels at 96dpi
-const A4_LANDSCAPE_WIDTH = 842
-const A4_LANDSCAPE_HEIGHT = 595
-
 export default function PDFPreviewModal({
     open,
     onClose,
     meals,
     mealPlanName,
 }: Props) {
-    const [zoom, setZoom] = useState(100)
     const [pdfUrl, setPdfUrl] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const [isDownloading, setIsDownloading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    const minZoom = 25
-    const maxZoom = 200
-    const zoomStep = 25
 
     const generatePdfUrl = useCallback(async () => {
         setIsLoading(true)
@@ -68,25 +54,12 @@ export default function PDFPreviewModal({
             URL.revokeObjectURL(pdfUrl)
             setPdfUrl(null)
         }
-        setZoom(100)
         setError(null)
         onClose()
     }
 
-    const handleZoomIn = () => {
-        setZoom((prev) => Math.min(prev + zoomStep, maxZoom))
-    }
-
-    const handleZoomOut = () => {
-        setZoom((prev) => Math.max(prev - zoomStep, minZoom))
-    }
-
-    const handleResetZoom = () => {
-        setZoom(100)
-    }
-
     const handleDownload = async () => {
-        setIsLoading(true)
+        setIsDownloading(true)
         try {
             const blob = await pdf(
                 <PDFDocument meals={meals} mealPlanName={mealPlanName} />,
@@ -103,7 +76,7 @@ export default function PDFPreviewModal({
             console.error("Error downloading PDF:", err)
             setError("Failed to download PDF. Please try again.")
         } finally {
-            setIsLoading(false)
+            setIsDownloading(false)
         }
     }
 
@@ -148,76 +121,12 @@ export default function PDFPreviewModal({
                         PDF Preview - {mealPlanName || "Meal Plan"}
                     </h2>
 
-                    {/* Zoom Controls */}
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                        }}
-                    >
-                        <Button
-                            variant="outlined"
-                            onClick={handleZoomOut}
-                            disabled={zoom <= minZoom || isLoading}
-                            style={{
-                                minWidth: "40px",
-                                padding: "8px",
-                                borderColor: "#ffffff",
-                                color: "#ffffff",
-                            }}
-                        >
-                            <MagnifyingGlassMinus size={20} />
-                        </Button>
-
-                        <span
-                            style={{
-                                color: "#ffffff",
-                                minWidth: "60px",
-                                textAlign: "center",
-                                fontSize: "14px",
-                                fontWeight: 500,
-                            }}
-                        >
-                            {zoom}%
-                        </span>
-
-                        <Button
-                            variant="outlined"
-                            onClick={handleZoomIn}
-                            disabled={zoom >= maxZoom || isLoading}
-                            style={{
-                                minWidth: "40px",
-                                padding: "8px",
-                                borderColor: "#ffffff",
-                                color: "#ffffff",
-                            }}
-                        >
-                            <MagnifyingGlassPlus size={20} />
-                        </Button>
-
-                        <Button
-                            variant="outlined"
-                            onClick={handleResetZoom}
-                            disabled={isLoading}
-                            style={{
-                                minWidth: "40px",
-                                padding: "8px",
-                                borderColor: "#ffffff",
-                                color: "#ffffff",
-                            }}
-                            title="Reset Zoom"
-                        >
-                            <ArrowsOut size={20} />
-                        </Button>
-                    </div>
-
                     {/* Action Buttons */}
                     <div style={{ display: "flex", gap: "12px" }}>
                         <Button
                             variant="contained"
                             onClick={handleDownload}
-                            disabled={isLoading}
+                            disabled={isDownloading || isLoading}
                             style={{
                                 backgroundColor: "#10b981",
                                 color: "#ffffff",
@@ -228,7 +137,7 @@ export default function PDFPreviewModal({
                                 fontWeight: 600,
                             }}
                         >
-                            {isLoading ? (
+                            {isDownloading ? (
                                 <CircularProgress size={20} color="inherit" />
                             ) : (
                                 <DownloadSimple size={20} weight="bold" />
@@ -257,12 +166,11 @@ export default function PDFPreviewModal({
                 <div
                     style={{
                         flex: 1,
-                        overflow: "auto",
-                        backgroundColor: "#f3f4f6",
-                        padding: "24px",
+                        overflow: "hidden",
+                        backgroundColor: "#374151",
                         display: "flex",
                         justifyContent: "center",
-                        alignItems: "flex-start",
+                        alignItems: "center",
                     }}
                 >
                     {isLoading && (
@@ -278,10 +186,10 @@ export default function PDFPreviewModal({
                         >
                             <CircularProgress
                                 size={48}
-                                style={{ color: "#00473C" }}
+                                style={{ color: "#ffffff" }}
                             />
                             <span
-                                style={{ color: "#00473C", fontWeight: 500 }}
+                                style={{ color: "#ffffff", fontWeight: 500 }}
                             >
                                 Generating PDF preview...
                             </span>
@@ -315,27 +223,15 @@ export default function PDFPreviewModal({
                     )}
 
                     {pdfUrl && !isLoading && !error && (
-                        <div
+                        <iframe
+                            src={pdfUrl}
                             style={{
-                                transform: `scale(${zoom / 100})`,
-                                transformOrigin: "top center",
-                                transition: "transform 0.2s ease",
+                                width: "100%",
+                                height: "100%",
+                                border: "none",
                             }}
-                        >
-                            <iframe
-                                src={pdfUrl}
-                                style={{
-                                    width: `${A4_LANDSCAPE_WIDTH}px`,
-                                    height: `${A4_LANDSCAPE_HEIGHT}px`,
-                                    border: "1px solid #d1d5db",
-                                    borderRadius: "8px",
-                                    backgroundColor: "#ffffff",
-                                    boxShadow:
-                                        "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                                }}
-                                title="PDF Preview"
-                            />
-                        </div>
+                            title="PDF Preview"
+                        />
                     )}
                 </div>
             </div>
