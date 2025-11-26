@@ -1,12 +1,11 @@
 "use client"
-import { usePDF } from "react-to-pdf"
 import { Ingredient, Meal, Recipe } from "@/utils/types"
-import { Autocomplete, Button, Modal, Stack, TextField } from "@mui/material"
+import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple, Plus } from "@phosphor-icons/react"
 import { searchRecipesByName } from "@/utils/api"
-import MealTable from "./MealTable"
+import PDFPreviewModal from "./PDFPreviewModal"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -97,10 +96,6 @@ const CalculateMeal: React.FC = () => {
         },
     ])
     const [mealPlanName, setMealPlanName] = useState("")
-    const { targetRef, toPDF } = usePDF({
-        filename: `${mealPlanName || "meal-plan"}.pdf`,
-        resolution: 10,
-    })
     const [planCalories, setPlanCalories] = useState(1800)
     const [viewReport, setViewReport] = useState(false)
 
@@ -462,216 +457,12 @@ const CalculateMeal: React.FC = () => {
 
     return (
         <>
-            <Modal
+            <PDFPreviewModal
                 open={viewReport}
                 onClose={() => setViewReport(false)}
-                className="flex items-center justify-center p-20"
-            >
-                <div
-                    style={{
-                        color: "#00473C", // text-DarkGreen
-                        height: "100%",
-                        width: "100%",
-                        overflowY: "auto",
-                        borderRadius: "1rem", // rounded-2xl
-                        backgroundColor: "#ffffff",
-                        padding: "2.5rem", // px-10
-                        boxSizing: "border-box",
-                    }}
-                >
-                    {/* Header */}
-                    <div
-                        style={{
-                            position: "sticky",
-                            top: 0,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            backgroundColor: "#ffffff",
-                            paddingTop: "2.5rem",
-                            paddingBottom: "2.5rem",
-                            zIndex: 10,
-                        }}
-                    >
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>
-                            Nutritional Report
-                        </h2>
-                        <div style={{ display: "flex", gap: "1.25rem" }}>
-                            <button
-                                style={{
-                                    backgroundColor: "#00473C",
-                                    borderRadius: "0.25rem",
-                                }}
-                            >
-                                <span
-                                    style={{
-                                        color: "#ffffff",
-                                        padding: "0.5rem 1rem",
-                                        display: "inline-block",
-                                        cursor: "pointer",
-                                    }}
-                                    onClick={() => toPDF()}
-                                >
-                                    Download PDF
-                                </span>
-                            </button>
-                            <button
-                                style={{
-                                    backgroundColor: "#00473C",
-                                    borderRadius: "0.25rem",
-                                    color: "#ffffff",
-                                    padding: "0.5rem 1rem",
-                                    cursor: "pointer",
-                                }}
-                                onClick={() => setViewReport(false)}
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* MealTables container */}
-                    <div
-                        style={{
-                            marginBottom: "2.5rem",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "2.5rem",
-                            padding: "2.5rem",
-                        }}
-                        ref={targetRef}
-                    >
-                        {/* Render your MealTables here */}
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Kcal",
-                                "Amount",
-                                "Volume_per_Unit",
-                                "Water",
-                                "Ashes",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Protein_total",
-                                "Protein_plant",
-                                "Protein_animal",
-                                "Protein_Whey",
-                                "Protein_Casein",
-                                "Protein_Carnitine",
-                                "Protein_taurine",
-                                "Protein_Essential_Amino_Acids",
-                                "Protein_L_Arginin",
-                                "Protein_L_Leucin",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Fat_total",
-                                "Fat_saturated",
-                                "Fat_unsaturated",
-                                "Fat_la",
-                                "Fat_aa",
-                                "Fat_ala",
-                                "Fat_dha",
-                                "Fat_epa",
-                                "Fat_mct",
-                                "MCT_TCM_ratio",
-                                "Fatty_Acids_C6",
-                                "Fatty_Acids_C8",
-                                "Fatty_Acids_C10",
-                                "Fatty_Acids_C12",
-                                "Fatty_Acids_C14",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Carbohydrates_total",
-                                "Carbohydrates_mono",
-                                "Carbohydrates_poli",
-                                "Carbohydrates_fructose",
-                                "Carbohydrates_glucose",
-                                "Carbohydrates_sucrose",
-                                "Carbohydrates_lactose",
-                                "Carbohydrates_maltose",
-                                "Carbohydrates_isomaltulose",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Carbohydrates_Noncaloric_Carbohydrates",
-                                "Carbohydrates_Organic_Acids",
-                                "Carbohydrates_Polyols",
-                                "Fiber_total",
-                                "Fiber_Soluble",
-                                "Fiber_Insoluble",
-                                "Fiber_Fructooligosaccharides",
-                                "Fiber_Galactooligosaccharides",
-                                "Sugars",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Cholesterol",
-                                "Atherogenic_index",
-                                "Glycemic_index",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Mineral_Na",
-                                "Mineral_K",
-                                "Mineral_Ca",
-                                "Mineral_Mg",
-                                "Mineral_P",
-                                "Mineral_Fe",
-                                "Mineral_Zn",
-                                "Mineral_Cu",
-                                "Mineral_Cl",
-                                "Mineral_Cr",
-                                "Mineral_F",
-                                "Mineral_Jod",
-                                "Mineral_Mn",
-                                "Mineral_Mo",
-                                "Mineral_S",
-                                "Mineral_Se",
-                                "Phosphates",
-                            ]}
-                        />
-                        <MealTable
-                            meals={meals}
-                            fields={[
-                                "Vitamin_A",
-                                "Vitamin_RE",
-                                "Carotenoids",
-                                "Vitamin_B1",
-                                "Vitamin_B2",
-                                "Vitamin_B3",
-                                "Vitamin_B4_Holin",
-                                "Vitamin_B5",
-                                "Vitamin_B6",
-                                "Vitamin_B7",
-                                "Vitamin_B8_Inositol",
-                                "Vitamin_B9_Folic_Acid",
-                                "Vitamin_B12",
-                                "Vitamin_PP",
-                                "Vitamin_C",
-                                "Vitamin_D",
-                                "Vitamin_E",
-                                "Vitamin_K",
-                                "Nucleotides",
-                            ]}
-                        />
-                    </div>
-                </div>
-            </Modal>
+                meals={meals}
+                mealPlanName={mealPlanName}
+            />
             <div className="w-full pt-30 pb-10">
                 <div className="flex justify-between pb-10">
                     <h1 className="text-DarkGreen font-Poppins text-4xl font-semibold">
