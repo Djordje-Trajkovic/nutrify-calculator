@@ -73,6 +73,52 @@ const formatFieldName = (field: string): string => {
         .trim()
 }
 
+/**
+ * Safely extracts a nutritional field value from an ingredient
+ */
+const getIngredientFieldValue = (
+    ingredient: Ingredient,
+    field: keyof NutritionalFields,
+): number | undefined => {
+    return ingredient[field]
+}
+
+/**
+ * Calculates the contribution of an ingredient field to the totals
+ */
+const calculateFieldContribution = (
+    ingredient: Ingredient,
+    field: keyof NutritionalFields,
+): number => {
+    const value = getIngredientFieldValue(ingredient, field)
+    if (value == null) return 0
+
+    if (isRawField(field)) {
+        return value
+    }
+
+    const amount = ingredient.Amount ?? 0
+    return (value * amount) / 100 || 0
+}
+
+/**
+ * Formats a field value for display in the table
+ */
+const formatFieldValue = (
+    ingredient: Ingredient,
+    field: keyof NutritionalFields,
+): string => {
+    const value = getIngredientFieldValue(ingredient, field)
+    if (value == null) return ""
+
+    if (isRawField(field)) {
+        return value.toString()
+    }
+
+    const amount = ingredient.Amount ?? 0
+    return ((value * amount) / 100).toFixed(2)
+}
+
 export default function PDFMealTable({ meals, fields }: Props) {
     const fieldWidth = getFieldWidth(fields.length)
 
@@ -140,18 +186,11 @@ export default function PDFMealTable({ meals, fields }: Props) {
                             (ingredient, ingredientIndex) => {
                                 // Calculate contributions for this ingredient
                                 fields.forEach((field) => {
-                                    const val = (ingredient as Ingredient)[
-                                        field
-                                    ] as number | undefined
                                     const contribution =
-                                        val == null
-                                            ? 0
-                                            : isRawField(field)
-                                              ? val
-                                              : (val *
-                                                    ((ingredient.Amount ?? 0) /
-                                                        100)) ||
-                                                0
+                                        calculateFieldContribution(
+                                            ingredient,
+                                            field,
+                                        )
 
                                     mealTotals[field] =
                                         (mealTotals[field] ?? 0) + contribution
@@ -232,22 +271,8 @@ export default function PDFMealTable({ meals, fields }: Props) {
 
                                         {/* Field Cells */}
                                         {fields.map((f) => {
-                                            const val = (
-                                                ingredient as Ingredient
-                                            )[f] as number | undefined
-                                            let displayValue = ""
-                                            if (val != null) {
-                                                if (isRawField(f)) {
-                                                    displayValue = val.toString()
-                                                } else {
-                                                    const amt =
-                                                        ingredient.Amount ?? 0
-                                                    displayValue = (
-                                                        val *
-                                                        (amt / 100)
-                                                    ).toFixed(2)
-                                                }
-                                            }
+                                            const displayValue =
+                                                formatFieldValue(ingredient, f)
 
                                             return (
                                                 <View

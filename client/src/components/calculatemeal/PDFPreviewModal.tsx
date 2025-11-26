@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Modal, Button, CircularProgress } from "@mui/material"
 import {
     MagnifyingGlassPlus,
@@ -18,6 +18,10 @@ type Props = {
     meals: Meal[]
     mealPlanName: string
 }
+
+// A4 landscape dimensions in pixels at 96dpi
+const A4_LANDSCAPE_WIDTH = 842
+const A4_LANDSCAPE_HEIGHT = 595
 
 export default function PDFPreviewModal({
     open,
@@ -51,17 +55,12 @@ export default function PDFPreviewModal({
         }
     }, [meals, mealPlanName])
 
-    // Generate PDF when modal opens
-    const handleOpen = useCallback(() => {
-        if (open && !pdfUrl && !isLoading) {
+    // Generate PDF when modal opens using useEffect
+    useEffect(() => {
+        if (open && !pdfUrl && !isLoading && !error) {
             generatePdfUrl()
         }
-    }, [open, pdfUrl, isLoading, generatePdfUrl])
-
-    // Call handleOpen when open changes
-    if (open && !pdfUrl && !isLoading && !error) {
-        handleOpen()
-    }
+    }, [open, pdfUrl, isLoading, error, generatePdfUrl])
 
     // Clean up URL when modal closes
     const handleClose = () => {
@@ -326,8 +325,8 @@ export default function PDFPreviewModal({
                             <iframe
                                 src={pdfUrl}
                                 style={{
-                                    width: "842px", // A4 landscape width in pixels at 96dpi
-                                    height: "595px", // A4 landscape height
+                                    width: `${A4_LANDSCAPE_WIDTH}px`,
+                                    height: `${A4_LANDSCAPE_HEIGHT}px`,
                                     border: "1px solid #d1d5db",
                                     borderRadius: "8px",
                                     backgroundColor: "#ffffff",
