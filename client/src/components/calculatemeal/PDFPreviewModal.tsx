@@ -224,7 +224,7 @@ export default function PDFPreviewModal({
 
                     {pdfUrl && !isLoading && !error && (
                         <iframe
-                            src={pdfUrl}
+                            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
                             style={{
                                 width: "100%",
                                 height: "100%",

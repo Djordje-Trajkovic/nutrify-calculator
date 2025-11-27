@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
 })
 
 // Define field groups for nutritional categories
+// Split large tables to fit within page width (max ~8-10 fields per table)
 const fieldGroups: {
     title: string
     fields: (keyof NutritionalFields)[]
@@ -88,7 +89,7 @@ const fieldGroups: {
         ],
     },
     {
-        title: "Fats",
+        title: "Fats (Part 1)",
         fields: [
             "Fat_total",
             "Fat_saturated",
@@ -98,6 +99,11 @@ const fieldGroups: {
             "Fat_ala",
             "Fat_dha",
             "Fat_epa",
+        ],
+    },
+    {
+        title: "Fats (Part 2)",
+        fields: [
             "Fat_mct",
             "MCT_TCM_ratio",
             "Fatty_Acids_C6",
@@ -140,7 +146,7 @@ const fieldGroups: {
         fields: ["Cholesterol", "Atherogenic_index", "Glycemic_index"],
     },
     {
-        title: "Minerals",
+        title: "Minerals (Part 1)",
         fields: [
             "Mineral_Na",
             "Mineral_K",
@@ -150,6 +156,11 @@ const fieldGroups: {
             "Mineral_Fe",
             "Mineral_Zn",
             "Mineral_Cu",
+        ],
+    },
+    {
+        title: "Minerals (Part 2)",
+        fields: [
             "Mineral_Cl",
             "Mineral_Cr",
             "Mineral_F",
@@ -162,7 +173,7 @@ const fieldGroups: {
         ],
     },
     {
-        title: "Vitamins",
+        title: "Vitamins (Part 1)",
         fields: [
             "Vitamin_A",
             "Vitamin_RE",
@@ -173,6 +184,11 @@ const fieldGroups: {
             "Vitamin_B4_Holin",
             "Vitamin_B5",
             "Vitamin_B6",
+        ],
+    },
+    {
+        title: "Vitamins (Part 2)",
+        fields: [
             "Vitamin_B7",
             "Vitamin_B8_Inositol",
             "Vitamin_B9_Folic_Acid",
@@ -209,9 +225,9 @@ export default function PDFDocument({ meals, mealPlanName }: Props) {
                     </Text>
                 </View>
 
-                {/* Tables for each field group */}
+                {/* Tables for each field group - wrap={false} keeps heading and table together */}
                 {fieldGroups.map((group) => (
-                    <View key={group.title} style={styles.tableSection}>
+                    <View key={group.title} style={styles.tableSection} wrap={false}>
                         <Text style={styles.sectionTitle}>{group.title}</Text>
                         <PDFMealTable meals={meals} fields={group.fields} />
                     </View>
