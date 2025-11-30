@@ -13,7 +13,6 @@ type SideMenuOptionProps = {
     suboptions?: MenuOption[]
     isExpanded?: boolean
     onToggleExpand?: () => void
-    isSuboption?: boolean
 }
 
 const SideMenuOption: React.FC<SideMenuOptionProps> = ({
@@ -24,7 +23,6 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
     suboptions,
     isExpanded,
     onToggleExpand,
-    isSuboption,
 }) => {
     const router = useRouter()
     const pathname = usePathname()
@@ -53,9 +51,7 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
         <div className="flex flex-col items-center">
             <button
                 onClick={handleClick}
-                className={`group relative flex cursor-pointer items-center justify-center rounded-lg ${
-                    isSuboption ? "h-11 w-11" : "h-11 w-11"
-                } ${
+                className={`group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg ${
                     isExpanded && hasSuboptions ? "bg-gray-100" : ""
                 }`}
             >
@@ -96,7 +92,6 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                             icon={suboption.icon}
                             path={suboption.path}
                             title={suboption.title}
-                            isSuboption={true}
                         />
                     ))}
                 </div>
