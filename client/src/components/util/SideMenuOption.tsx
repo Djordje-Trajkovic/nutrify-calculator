@@ -48,12 +48,12 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
     }
 
     return (
-        <div className="flex flex-col items-center">
+        <div className={`"flex flex-col items-center px-1" ${hasSuboptions && isExpanded ? "bg-[#EEEBDAB2] bg-opacity-70 rounded-lg" : "rounded-lg"}`}>
             <button
                 onClick={handleClick}
                 className={`group relative flex cursor-pointer items-center justify-center rounded-lg ${
-                    isExpanded && hasSuboptions ? "bg-gray-100" : ""
-                } ${hasSuboptions ? "h-11 w-auto gap-1 px-1" : "h-11 w-11"}`}
+                    isExpanded && hasSuboptions ? "bg-[#EEEBDAB2] bg-opacity-70" : ""
+                } ${hasSuboptions ? "h-11 w-auto gap-0.5" : "h-11 w-11"}`}
             >
                 <div
                     className={`group-hover:bg-DarkGreen flex h-11 w-[43px] shrink-0 items-center justify-center rounded-lg group-hover:text-white ${
@@ -62,14 +62,14 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                             : "bg-transparent text-[#757575]"
                     } ${
                         isSignOut &&
-                        "bg-gray-100 text-[#FF5151] group-hover:bg-[#FF5151]"
+                        "bg-[#EEEBDAB2] bg-opacity-70 text-[#FF5151] group-hover:bg-[#FF5151]"
                     } transition duration-200 ease-in`}
                 >
                     {icon}
                 </div>
                 {/* Caret indicator right next to the icon for expandable items */}
                 {hasSuboptions && (
-                    <div className="hidden text-[#757575] md:flex">
+                    <div className="hidden text-[#757575] md:flex absolute right-0 group-hover:text-white">
                         {isExpanded ? <CaretUp size={12} /> : <CaretDown size={12} />}
                     </div>
                 )}

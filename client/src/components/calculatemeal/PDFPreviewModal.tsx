@@ -128,7 +128,7 @@ export default function PDFPreviewModal({
                             onClick={handleDownload}
                             disabled={isDownloading || isLoading}
                             style={{
-                                backgroundColor: "#10b981",
+                                backgroundColor: "#01b011",
                                 color: "#ffffff",
                                 display: "flex",
                                 alignItems: "center",

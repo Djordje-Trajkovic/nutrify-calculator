@@ -205,9 +205,7 @@ const SideMenu: React.FC = () => {
                             }`}
                         >
                             {option.icon}
-                            {hasSuboptions && (
-                                <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-LightGreen"></div>
-                            )}
+                           
                         </button>
                     )
                 })}
