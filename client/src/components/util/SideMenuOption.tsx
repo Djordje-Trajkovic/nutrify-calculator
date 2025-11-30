@@ -51,9 +51,9 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
         <div className="flex flex-col items-center">
             <button
                 onClick={handleClick}
-                className={`group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg ${
+                className={`group relative flex cursor-pointer items-center justify-center rounded-lg ${
                     isExpanded && hasSuboptions ? "bg-gray-100" : ""
-                }`}
+                } ${hasSuboptions ? "h-11 w-auto gap-1 px-1" : "h-11 w-11"}`}
             >
                 <div
                     className={`group-hover:bg-DarkGreen flex h-11 w-[43px] shrink-0 items-center justify-center rounded-lg group-hover:text-white ${
@@ -67,6 +67,12 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                 >
                     {icon}
                 </div>
+                {/* Caret indicator right next to the icon for expandable items */}
+                {hasSuboptions && (
+                    <div className="hidden text-[#757575] md:flex">
+                        {isExpanded ? <CaretUp size={12} /> : <CaretDown size={12} />}
+                    </div>
+                )}
                 {/* Hover tooltip - positioned to extend outside container */}
                 {title && (
                     <div className="pointer-events-none absolute left-full z-[100] ml-2 hidden min-h-11 rounded-lg opacity-0 transition duration-200 group-hover:flex group-hover:opacity-100">
@@ -74,12 +80,6 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                             {title}
                         </div>
                         <div className="bg-DarkGreen absolute top-[33%] -left-1 h-[12px] w-[12px] rotate-45"></div>
-                    </div>
-                )}
-                {/* Caret indicator for expandable items */}
-                {hasSuboptions && (
-                    <div className="absolute -right-4 hidden text-[#757575] md:block">
-                        {isExpanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
                     </div>
                 )}
             </button>
