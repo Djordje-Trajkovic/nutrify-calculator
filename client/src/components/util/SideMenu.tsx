@@ -210,7 +210,7 @@ const SideMenu: React.FC = () => {
                         >
                             {option.icon}
                             {hasSuboptions && (
-                                <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[#00B011]"></div>
+                                <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-LightGreen"></div>
                             )}
                         </button>
                     )
@@ -236,7 +236,7 @@ const SideMenu: React.FC = () => {
             {/* Mobile Modal for Suboptions */}
             {mobileModalOption && (
                 <div
-                    className="fixed inset-0 z-50 flex items-end justify-center bg-[#00000035] backdrop-blur-xs md:hidden"
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 backdrop-blur-xs md:hidden"
                     onClick={() => setMobileModalOption(null)}
                 >
                     <div

@@ -28,8 +28,12 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
 }) => {
     const router = useRouter()
     const pathname = usePathname()
-    const isSelected = pathname === path || (pathname.startsWith(path) && path !== "/" && !suboptions)
     const hasSuboptions = suboptions && suboptions.length > 0
+
+    // Check if this option is selected:
+    // - Exact path match, OR
+    // - Path starts with this path (for nested routes) but not for root "/" and not for parent items with suboptions
+    const isOptionSelected = pathname === path || (pathname.startsWith(path) && path !== "/" && !hasSuboptions)
 
     const handleClick = async () => {
         if (isSignOut) {
@@ -57,7 +61,7 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                     className={`group-hover:bg-DarkGreen flex shrink-0 items-center justify-center rounded-lg group-hover:text-white ${
                         isSuboption ? "h-10 w-10" : "h-11 w-[43px]"
                     } ${
-                        isSelected
+                        isOptionSelected
                             ? "bg-DarkGreen text-white"
                             : isExpanded && hasSuboptions
                               ? "bg-DarkGreen/20 text-DarkGreen"
