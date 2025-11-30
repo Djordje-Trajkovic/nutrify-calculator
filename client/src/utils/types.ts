@@ -6,6 +6,7 @@ export type MenuOption = {
     icon: React.ReactNode
     title: string
     path: string
+    suboptions?: MenuOption[]
 }
 
 export type NutritionalFields = {

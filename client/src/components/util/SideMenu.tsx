@@ -10,13 +10,28 @@ import {
     HouseSimple,
     Notebook,
     SignOut,
+    Carrot,
+    X,
 } from "@phosphor-icons/react"
-import ExtendedSideMenu from "./ExtendedSideMenu"
 import { MenuOption } from "@/utils/types"
 import Cookies from "js-cookie"
+import { useRouter, usePathname } from "next/navigation"
 
 const SideMenu: React.FC = () => {
     const [menuOptions, setMenuOptions] = useState<MenuOption[]>([])
+    const [expandedItem, setExpandedItem] = useState<string | null>(null)
+    const [mobileModalOption, setMobileModalOption] = useState<MenuOption | null>(null)
+    const router = useRouter()
+    const pathname = usePathname()
+
+    // Calculator suboptions
+    const calculatorSuboptions: MenuOption[] = [
+        {
+            icon: <Carrot size={20} />,
+            title: "Create Meal Plan",
+            path: "/calculator/meal",
+        },
+    ]
 
     useEffect(() => {
         const fetchUserRole = async () => {
@@ -49,22 +64,13 @@ const SideMenu: React.FC = () => {
                                     icon: <Calculator size={20} />,
                                     title: "Calculator",
                                     path: "/calculator",
+                                    suboptions: calculatorSuboptions,
                                 },
                                 {
                                     icon: <Notebook size={20} />,
                                     title: "Diary",
                                     path: "/diary",
                                 },
-                                // {
-                                //     icon: <ForkKnife size={20} />,
-                                //     title: "Nutrition",
-                                //     path: "/nutrition",
-                                // },
-                                // {
-                                //     icon: <Barbell size={20} />,
-                                //     title: "Workout",
-                                //     path: "/workout",
-                                // },
                             )
                         } else if (role === "User-Free") {
                             options.push(
@@ -101,13 +107,50 @@ const SideMenu: React.FC = () => {
         }
 
         fetchUserRole()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    // Auto-expand calculator if on calculator route
+    useEffect(() => {
+        if (pathname.startsWith("/calculator")) {
+            setExpandedItem("/calculator")
+        }
+    }, [pathname])
+
+    const handleToggleExpand = (path: string) => {
+        setExpandedItem(expandedItem === path ? null : path)
+    }
+
+    const handleMobileOptionClick = (option: MenuOption) => {
+        if (option.suboptions && option.suboptions.length > 0) {
+            setMobileModalOption(option)
+        } else {
+            router.push(option.path)
+        }
+    }
+
+    const handleMobileSuboptionClick = (path: string) => {
+        router.push(path)
+        setMobileModalOption(null)
+    }
+
+    const handleSignOut = () => {
+        Cookies.remove("jwtNutrifyS")
+        router.push("/login")
+    }
+
+    const isExpanded = expandedItem !== null
 
     return (
         <>
-            <div className="fixed right-0 bottom-0 left-0 z-40 flex h-[72px] w-full flex-row items-center justify-between bg-white p-[24px] shadow-[0_0_8px_rgba(0,0,0,0.25)] md:top-0 md:left-0 md:h-screen md:w-[92px] md:flex-col md:gap-6 md:p-6">
-                <div className="flex w-full flex-row items-center justify-between gap-6 md:flex-col md:justify-baseline">
-                    <div className="hidden h-16 w-16 items-center justify-center md:flex">
+            {/* Desktop Sidebar */}
+            <div
+                className={`fixed top-0 left-0 z-40 hidden h-screen flex-col items-center justify-between gap-6 bg-white p-6 shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-all duration-300 ease-in-out md:flex ${
+                    isExpanded ? "w-[180px]" : "w-[92px]"
+                }`}
+            >
+                <div className="flex w-full flex-col items-center gap-6">
+                    <div className="flex h-16 w-16 items-center justify-center">
                         <Image
                             src="https://res.cloudinary.com/dwiuj7jqw/image/upload/t_upscale_and_bmp/Screenshot_2025_05_08_at_13_42_03_e0cc206919"
                             alt="logo"
@@ -115,8 +158,8 @@ const SideMenu: React.FC = () => {
                             height={128}
                         />
                     </div>
-                    <div className="hidden h-[2px] w-full bg-[#F6F6F6] md:block"></div>
-                    <span className="font-Poppins hidden text-[10px] font-medium text-[#757575] md:block">
+                    <div className="h-[2px] w-full bg-[#F6F6F6]"></div>
+                    <span className="font-Poppins text-[10px] font-medium text-[#757575]">
                         MAIN
                     </span>
                     {menuOptions.map((option) => (
@@ -125,10 +168,13 @@ const SideMenu: React.FC = () => {
                             icon={option.icon}
                             path={option.path}
                             title={option.title}
+                            suboptions={option.suboptions}
+                            isExpanded={expandedItem === option.path}
+                            onToggleExpand={() => handleToggleExpand(option.path)}
                         />
                     ))}
-                    <div className="hidden h-[2px] w-full bg-[#F6F6F6] md:block"></div>
-                    <div className="hidden md:block">
+                    <div className="h-[2px] w-full bg-[#F6F6F6]"></div>
+                    <div>
                         <span className="font-Poppins text-[10px] font-medium text-[#757575]">
                             SETTINGS
                         </span>
@@ -138,16 +184,102 @@ const SideMenu: React.FC = () => {
                         />
                     </div>
                 </div>
-                <div className="hidden md:block">
+                <div>
                     <SideMenuOption
                         icon={<SignOut size={20} />}
                         path="/"
                         isSignOut={true}
-                        
                     />
                 </div>
             </div>
-            <ExtendedSideMenu />
+
+            {/* Mobile Bottom Navigation */}
+            <div className="fixed right-0 bottom-0 left-0 z-40 flex h-[72px] w-full flex-row items-center justify-between bg-white px-[24px] shadow-[0_0_8px_rgba(0,0,0,0.25)] md:hidden">
+                {menuOptions.map((option) => {
+                    const isActive = pathname.startsWith(option.path)
+                    const hasSuboptions = option.suboptions && option.suboptions.length > 0
+                    return (
+                        <button
+                            key={option.title}
+                            onClick={() => handleMobileOptionClick(option)}
+                            className={`flex h-11 w-11 items-center justify-center rounded-lg transition duration-200 ${
+                                isActive
+                                    ? "bg-DarkGreen text-white"
+                                    : "bg-transparent text-[#757575] hover:bg-DarkGreen hover:text-white"
+                            }`}
+                        >
+                            {option.icon}
+                            {hasSuboptions && (
+                                <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[#00B011]"></div>
+                            )}
+                        </button>
+                    )
+                })}
+                <button
+                    onClick={() => router.push("/settings")}
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg transition duration-200 ${
+                        pathname === "/settings"
+                            ? "bg-DarkGreen text-white"
+                            : "bg-transparent text-[#757575] hover:bg-DarkGreen hover:text-white"
+                    }`}
+                >
+                    <Gear size={20} />
+                </button>
+                <button
+                    onClick={handleSignOut}
+                    className="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-100 text-[#FF5151] transition duration-200 hover:bg-[#FF5151] hover:text-white"
+                >
+                    <SignOut size={20} />
+                </button>
+            </div>
+
+            {/* Mobile Modal for Suboptions */}
+            {mobileModalOption && (
+                <div
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-[#00000035] backdrop-blur-xs md:hidden"
+                    onClick={() => setMobileModalOption(null)}
+                >
+                    <div
+                        className="animate-modal-from-bottom w-full rounded-t-xl bg-white p-6"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-4 flex items-center justify-between">
+                            <h3 className="font-Poppins text-lg font-semibold text-DarkGreen">
+                                {mobileModalOption.title}
+                            </h3>
+                            <button
+                                onClick={() => setMobileModalOption(null)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            {mobileModalOption.suboptions?.map((suboption) => {
+                                const isActive = pathname === suboption.path
+                                return (
+                                    <button
+                                        key={suboption.path}
+                                        onClick={() => handleMobileSuboptionClick(suboption.path)}
+                                        className={`flex items-center gap-3 rounded-lg p-3 transition duration-200 ${
+                                            isActive
+                                                ? "bg-DarkGreen text-white"
+                                                : "bg-gray-50 text-[#757575] hover:bg-DarkGreen hover:text-white"
+                                        }`}
+                                    >
+                                        <div className="flex h-10 w-10 items-center justify-center">
+                                            {suboption.icon}
+                                        </div>
+                                        <span className="font-Poppins text-sm font-medium">
+                                            {suboption.title}
+                                        </span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     )
 }
