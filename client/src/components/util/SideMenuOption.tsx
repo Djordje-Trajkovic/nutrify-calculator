@@ -50,22 +50,20 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col items-center">
             <button
                 onClick={handleClick}
-                className={`group flex cursor-pointer items-center gap-3 rounded-lg ${
-                    isSuboption ? "h-10 w-full" : "h-11 w-11"
+                className={`group relative flex cursor-pointer items-center justify-center rounded-lg ${
+                    isSuboption ? "h-11 w-11" : "h-11 w-11"
+                } ${
+                    isExpanded && hasSuboptions ? "bg-gray-100" : ""
                 }`}
             >
                 <div
-                    className={`group-hover:bg-DarkGreen flex shrink-0 items-center justify-center rounded-lg group-hover:text-white ${
-                        isSuboption ? "h-10 w-10" : "h-11 w-[43px]"
-                    } ${
+                    className={`group-hover:bg-DarkGreen flex h-11 w-[43px] shrink-0 items-center justify-center rounded-lg group-hover:text-white ${
                         isOptionSelected
                             ? "bg-DarkGreen text-white"
-                            : isExpanded && hasSuboptions
-                              ? "bg-DarkGreen/20 text-DarkGreen"
-                              : "bg-transparent text-[#757575]"
+                            : "bg-transparent text-[#757575]"
                     } ${
                         isSignOut &&
                         "bg-gray-100 text-[#FF5151] group-hover:bg-[#FF5151]"
@@ -73,23 +71,25 @@ const SideMenuOption: React.FC<SideMenuOptionProps> = ({
                 >
                     {icon}
                 </div>
+                {/* Hover tooltip - positioned to extend outside container */}
                 {title && (
-                    <div className="relative z-50 hidden min-h-11 rounded-lg transition duration-200 group-hover:flex">
-                        <div className="bg-DarkGreen flex h-full w-full items-center justify-center rounded-lg px-[12px] py-[10px] text-white">
+                    <div className="pointer-events-none absolute left-full z-[100] ml-2 hidden min-h-11 rounded-lg opacity-0 transition duration-200 group-hover:flex group-hover:opacity-100">
+                        <div className="bg-DarkGreen flex h-full w-full items-center justify-center whitespace-nowrap rounded-lg px-[12px] py-[10px] text-white">
                             {title}
                         </div>
                         <div className="bg-DarkGreen absolute top-[33%] -left-1 h-[12px] w-[12px] rotate-45"></div>
                     </div>
                 )}
+                {/* Caret indicator for expandable items */}
                 {hasSuboptions && (
-                    <div className="ml-auto hidden text-[#757575] md:block">
+                    <div className="absolute -right-4 hidden text-[#757575] md:block">
                         {isExpanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
                     </div>
                 )}
             </button>
-            {/* Desktop Suboptions - Inline */}
+            {/* Desktop Suboptions - Inline (no indentation) */}
             {hasSuboptions && isExpanded && (
-                <div className="ml-2 mt-2 hidden flex-col gap-2 border-l-2 border-[#F6F6F6] pl-2 md:flex">
+                <div className="mt-1 hidden flex-col items-center gap-1 border-l-2 border-[#F6F6F6] md:flex">
                     {suboptions.map((suboption) => (
                         <SideMenuOption
                             key={suboption.path}

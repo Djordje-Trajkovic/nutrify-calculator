@@ -139,15 +139,11 @@ const SideMenu: React.FC = () => {
         router.push("/login")
     }
 
-    const isExpanded = expandedItem !== null
-
     return (
         <>
             {/* Desktop Sidebar */}
             <div
-                className={`fixed top-0 left-0 z-40 hidden h-screen flex-col items-center justify-between gap-6 bg-white p-6 shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-all duration-300 ease-in-out md:flex ${
-                    isExpanded ? "w-[180px]" : "w-[92px]"
-                }`}
+                className="fixed top-0 left-0 z-40 hidden h-screen w-[92px] flex-col items-center justify-between gap-6 overflow-visible bg-white p-6 shadow-[0_0_8px_rgba(0,0,0,0.25)] md:flex"
             >
                 <div className="flex w-full flex-col items-center gap-6">
                     <div className="flex h-16 w-16 items-center justify-center">
