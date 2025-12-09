@@ -5,7 +5,7 @@ export default function ScreeningPage() {
         {
             title: 'NRS 2002',
             description: 'Nutritional Risk Screening 2002',
-            href: '/screening/nrs-2002',
+            href: '/screening/NRS_2002',
         },
         {
             title: 'MUST',
@@ -25,9 +25,9 @@ export default function ScreeningPage() {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 text-DarkGreen">
             <h1 className="text-3xl font-bold mb-6">Select Screening Tool</h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-DarkGreen mb-8">
                 Choose a nutritional screening assessment tool to begin
             </p>
 
@@ -39,7 +39,7 @@ export default function ScreeningPage() {
                         className="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-50 transition-colors"
                     >
                         <h2 className="text-xl font-semibold mb-2">{option.title}</h2>
-                        <p className="text-gray-600">{option.description}</p>
+                        <p className="text-DarkGreen">{option.description}</p>
                     </Link>
                 ))}
             </div>

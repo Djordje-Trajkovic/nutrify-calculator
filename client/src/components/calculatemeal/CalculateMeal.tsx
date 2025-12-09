@@ -463,7 +463,7 @@ const CalculateMeal: React.FC = () => {
                 meals={meals}
                 mealPlanName={mealPlanName}
             />
-            <div className="w-full pt-30 pb-10">
+            <div className="w-full pb-10">
                 <div className="flex justify-between pb-10">
                     <h1 className="text-DarkGreen font-Poppins text-4xl font-semibold">
                         Create Meal Plan
