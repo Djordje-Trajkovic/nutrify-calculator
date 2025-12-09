@@ -1,9 +1,6 @@
 "use server"
 
 import { cookies } from "next/headers"
-import SideMenu from "@/components/util/SideMenu"
-import Header from "@/components/util/AppHeader"
-
 import { redirect } from "next/navigation"
 import AppContainer from "@/components/util/AppContainer"
 import { authenticateUser } from "@/utils/authenticateUser"
@@ -25,18 +22,12 @@ export default async function Recipes() {
     }
 
     return (
-        <div className="h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <AppContainer>
-                    <CartModalProvider>
-                        <div className="flex flex-col gap-6">
-                            <RecipesClientWrapper />
-                        </div>
-                    </CartModalProvider>
-                </AppContainer>
-            </div>
-        </div>
+        <AppContainer>
+            <CartModalProvider>
+                <div className="flex flex-col gap-6">
+                    <RecipesClientWrapper />
+                </div>
+            </CartModalProvider>
+        </AppContainer>
     )
 }

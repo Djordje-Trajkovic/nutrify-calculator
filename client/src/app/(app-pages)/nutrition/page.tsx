@@ -1,8 +1,5 @@
 "use server"
 
-import SideMenu from "@/components/util/SideMenu"
-import Header from "@/components/util/AppHeader"
-
 import DashboardContainer from "@/components/util/AppContainer"
 import { DailyPlan } from "@/app/api/mealsTest/route"
 
@@ -41,20 +38,14 @@ export default async function NutritionPage() {
 
  
     return (
-        <div className="h-full min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <DashboardContainer>
-                <h2 className="text-DarkGreen pb-6 text-xl font-medium">
-                        Nutrition
-                    </h2>
-                    <NutritionPageCtxProvider> 
-                        <NutritionPageClientWrapper initialDailyPlanForId={personActivitiesForId ? [personActivitiesForId] : undefined}  />
-            
-                    </NutritionPageCtxProvider>
-                </DashboardContainer>
-            </div>
-        </div>
+        <DashboardContainer>
+        <h2 className="text-DarkGreen pb-6 text-xl font-medium">
+                Nutrition
+            </h2>
+            <NutritionPageCtxProvider> 
+                <NutritionPageClientWrapper initialDailyPlanForId={personActivitiesForId ? [personActivitiesForId] : undefined}  />
+    
+            </NutritionPageCtxProvider>
+        </DashboardContainer>
     )
 }

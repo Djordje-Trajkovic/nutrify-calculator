@@ -1,8 +1,5 @@
 "use server"
 
-import SideMenu from "../../../../../components/util/SideMenu"
-import Header from "../../../../../components/util/AppHeader"
-
 import { redirect } from "next/navigation"
 import AppContainer from "@/components/util/AppContainer"
 import AboutNutritionist from "@/components/nutritionistpage/aboutNutritionist"
@@ -59,64 +56,58 @@ const NutritionistPage = async () => {
     //get params and await nutritionis info
 
     return (
-        <div className="min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="h-full pt-[100px] pb-10">
-                <AppContainer>
-                    <div className="flex flex-col gap-6">
-                        <AboutNutritionist
-                            nutritionistProp={singleNutritionist}
-                        ></AboutNutritionist>
-                        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-6 lg:grid-rows-1">
-                            <div className="h-full w-full lg:col-span-4">
-                                <ContactInformationOrEducation
-                                    showType="contact"
-                                    education={
-                                        singleNutritionist?.education ??
-                                        "No education"
-                                    }
-                                    nutrtionistEmail={
-                                        singleNutritionist.email ?? "No email"
-                                    }
-                                    nutrtionistLanguages={
-                                        singleNutritionist.languages ??
-                                        "No languages to show"
-                                    }
-                                    nutrtionistPhoneNumber={
-                                        singleNutritionist.phone ??
-                                        "No phone number to show"
-                                    }
-                                ></ContactInformationOrEducation>
-                            </div>
-                            <div className="h-full w-full lg:col-span-2">
-                                <ContactInformationOrEducation
-                                    showType="education"
-                                    education={
-                                        singleNutritionist?.education ??
-                                        "No education"
-                                    }
-                                    nutrtionistEmail={
-                                        singleNutritionist.email ?? "No email"
-                                    }
-                                    nutrtionistLanguages={
-                                        singleNutritionist.languages ??
-                                        "No languages to show"
-                                    }
-                                    nutrtionistPhoneNumber={
-                                        singleNutritionist.phone ??
-                                        "No phone number to show"
-                                    }
-                                ></ContactInformationOrEducation>
-                            </div>
-                        </div>
-                        <Testimonial
-                            testimonialProp={singleNutritionist?.testimonial}
-                        ></Testimonial>
+        <AppContainer>
+            <div className="flex flex-col gap-6">
+                <AboutNutritionist
+                    nutritionistProp={singleNutritionist}
+                ></AboutNutritionist>
+                <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-6 lg:grid-rows-1">
+                    <div className="h-full w-full lg:col-span-4">
+                        <ContactInformationOrEducation
+                            showType="contact"
+                            education={
+                                singleNutritionist?.education ??
+                                "No education"
+                            }
+                            nutrtionistEmail={
+                                singleNutritionist.email ?? "No email"
+                            }
+                            nutrtionistLanguages={
+                                singleNutritionist.languages ??
+                                "No languages to show"
+                            }
+                            nutrtionistPhoneNumber={
+                                singleNutritionist.phone ??
+                                "No phone number to show"
+                            }
+                        ></ContactInformationOrEducation>
                     </div>
-                </AppContainer>
+                    <div className="h-full w-full lg:col-span-2">
+                        <ContactInformationOrEducation
+                            showType="education"
+                            education={
+                                singleNutritionist?.education ??
+                                "No education"
+                            }
+                            nutrtionistEmail={
+                                singleNutritionist.email ?? "No email"
+                            }
+                            nutrtionistLanguages={
+                                singleNutritionist.languages ??
+                                "No languages to show"
+                            }
+                            nutrtionistPhoneNumber={
+                                singleNutritionist.phone ??
+                                "No phone number to show"
+                            }
+                        ></ContactInformationOrEducation>
+                    </div>
+                </div>
+                <Testimonial
+                    testimonialProp={singleNutritionist?.testimonial}
+                ></Testimonial>
             </div>
-        </div>
+        </AppContainer>
     )
 }
 

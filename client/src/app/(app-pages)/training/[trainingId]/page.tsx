@@ -1,6 +1,3 @@
-import SideMenu from "@/components/util/SideMenu"
-import Header from "@/components/util/AppHeader"
-
 import { redirect } from "next/navigation"
 //import YourNextTraining from "@/components/dashboardpage/yourNextTraining"
 import AppContainer from "@/components/util/AppContainer"
@@ -72,16 +69,10 @@ export default async function SingleTraining() {
   
 
     return (
-        <div className="h-full min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <AppContainer>
-                    <TrainingCtxProvider>
-                    <TrainingClientWrapper initialTraining={fetchedTraining[0]} userId={user.id}/>
-                    </TrainingCtxProvider>
-                </AppContainer>
-            </div>
-        </div>
+        <AppContainer>
+            <TrainingCtxProvider>
+            <TrainingClientWrapper initialTraining={fetchedTraining[0]} userId={user.id}/>
+            </TrainingCtxProvider>
+        </AppContainer>
     )
 }

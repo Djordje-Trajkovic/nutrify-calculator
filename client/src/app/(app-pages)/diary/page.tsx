@@ -1,8 +1,5 @@
 "use server"
 
-import SideMenu from "@/components/util/SideMenu"
-import Header from "@/components/util/AppHeader"
-
 import { redirect } from "next/navigation"
 import DashboardContainer from "@/components/util/AppContainer"
 
@@ -87,30 +84,24 @@ export default async function DiaryPage() {
 
 
     return (
-        <div className="h-full min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <DashboardContainer>
-                    <div className="flex flex-col-reverse gap-6 lg:flex-row">
-                        <div className="flex w-full flex-col gap-6 lg:w-9/12">
-                            <DiaryPageCtxProvider>
-                                <DiaryClientWrapper
-                                    diaryEntries={diaryEntrie}
-                                />
-                            </DiaryPageCtxProvider>
-                        </div>
-                        <div className="flex w-full flex-col gap-6 lg:w-3/12 ">
-                            <div className="shadow-Combined font-Poppins text-p-[10px] hidden min-h-[260px] w-full min-w-[200px] items-center justify-center gap-2 rounded-xl bg-[#FFFFFF] text-[#2D3748] lg:flex lg:h-fit">
-                                Reklama
-                            </div>
-                            <div className="shadow-Combined font-Poppins text-p-[10px] hidden min-h-[260px] w-full min-w-[200px] items-center justify-center gap-2 rounded-xl bg-[#FFFFFF] text-[#2D3748] lg:flex lg:h-fit">
-                                Reklama
-                            </div>
-                        </div>
+        <DashboardContainer>
+            <div className="flex flex-col-reverse gap-6 lg:flex-row">
+                <div className="flex w-full flex-col gap-6 lg:w-9/12">
+                    <DiaryPageCtxProvider>
+                        <DiaryClientWrapper
+                            diaryEntries={diaryEntrie}
+                        />
+                    </DiaryPageCtxProvider>
+                </div>
+                <div className="flex w-full flex-col gap-6 lg:w-3/12 ">
+                    <div className="shadow-Combined font-Poppins text-p-[10px] hidden min-h-[260px] w-full min-w-[200px] items-center justify-center gap-2 rounded-xl bg-[#FFFFFF] text-[#2D3748] lg:flex lg:h-fit">
+                        Reklama
                     </div>
-                </DashboardContainer>
+                    <div className="shadow-Combined font-Poppins text-p-[10px] hidden min-h-[260px] w-full min-w-[200px] items-center justify-center gap-2 rounded-xl bg-[#FFFFFF] text-[#2D3748] lg:flex lg:h-fit">
+                        Reklama
+                    </div>
+                </div>
             </div>
-        </div>
+        </DashboardContainer>
     )
 }

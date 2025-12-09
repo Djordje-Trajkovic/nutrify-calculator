@@ -193,7 +193,6 @@ const SideMenu: React.FC = () => {
             <div className="fixed right-0 bottom-0 left-0 z-40 flex h-[72px] w-full flex-row items-center justify-between bg-white px-[24px] shadow-[0_0_8px_rgba(0,0,0,0.25)] md:hidden">
                 {menuOptions.map((option) => {
                     const isActive = pathname.startsWith(option.path)
-                    const hasSuboptions = option.suboptions && option.suboptions.length > 0
                     return (
                         <button
                             key={option.title}

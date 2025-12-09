@@ -1,7 +1,5 @@
 import { cookies } from "next/headers"
 import TodaysFoodInteake from "@/components/dashboardpage/todaysFoodIntakes"
-import Header from "@/components/util/AppHeader"
-import SideMenu from "@/components/util/SideMenu"
 import React from "react"
 import AppContainer from "../../../components/util/AppContainer"
 import YourNextMeal from "@/components/dashboardpage/yourNextMeal"
@@ -78,50 +76,44 @@ export default async function DashboardPage() {
     ].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
     return (
-        <div className="h-full min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <AppContainer>
-                    <div className="flex flex-col gap-6">
-                        <div className="flex flex-col gap-2 text-black">
-                            <h2 className="text-DarkGreen font-Poppins text-2xl font-medium">
-                                Hi, {user.first_name ? user.first_name : "user"}
-                            </h2>
-                            <p className="text-lg font-normal text-[#757575]">
-                                Lorem ipsum dolor sit amet
-                            </p>
-                        </div>
-                        <TodaysFoodInteake
-                            totalCalories={totalCalories}
-                            totalProteins={totalProteins}
-                            totalCarbohydrates={totalCarbohydrates}
-                            totalFats={totalFats}
+        <AppContainer>
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2 text-black">
+                    <h2 className="text-DarkGreen font-Poppins text-2xl font-medium">
+                        Hi, {user.first_name ? user.first_name : "user"}
+                    </h2>
+                    <p className="text-lg font-normal text-[#757575]">
+                        Lorem ipsum dolor sit amet
+                    </p>
+                </div>
+                <TodaysFoodInteake
+                    totalCalories={totalCalories}
+                    totalProteins={totalProteins}
+                    totalCarbohydrates={totalCarbohydrates}
+                    totalFats={totalFats}
+                />
+                <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-5 lg:grid-rows-1">
+                    <div className="h-full w-full lg:col-span-3">
+                        <YourNextMeal
+                            nextMealProp={nextMeal}
+                            isNextMealComponent={true}
                         />
-                        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-5 lg:grid-rows-1">
-                            <div className="h-full w-full lg:col-span-3">
-                                <YourNextMeal
-                                    nextMealProp={nextMeal}
-                                    isNextMealComponent={true}
-                                />
-                            </div>
-                            <div className="h-full w-full lg:col-span-2">
-                                <YourNextTraining
-                                    nextTrainingProp={nextTraining}
-                                />
-                            </div>
-                        </div>
-                        <TodaysTimeline
-                            todaysActivityProps={sortedActivities}
-                            totalCalories={totalCalories}
-                            totalProteins={totalProteins}
-                            totalCarbohydrates={totalCarbohydrates}
-                            totalFats={totalFats}
-                        />
-                        <GrocerysForNextMeal />
                     </div>
-                </AppContainer>
+                    <div className="h-full w-full lg:col-span-2">
+                        <YourNextTraining
+                            nextTrainingProp={nextTraining}
+                        />
+                    </div>
+                </div>
+                <TodaysTimeline
+                    todaysActivityProps={sortedActivities}
+                    totalCalories={totalCalories}
+                    totalProteins={totalProteins}
+                    totalCarbohydrates={totalCarbohydrates}
+                    totalFats={totalFats}
+                />
+                <GrocerysForNextMeal />
             </div>
-        </div>
+        </AppContainer>
     )
 }
