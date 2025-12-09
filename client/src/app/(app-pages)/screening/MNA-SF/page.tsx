@@ -27,9 +27,9 @@ const mnaSFConfig: ScreeningConfig = {
             section: "Food Intake",
             options: [
                 {
-                    label: "no decrease in food intake",
+                    label: "severe decrease in food intake",
                     value: 0,
-                    description: "No decrease in food intake over the past 3 months",
+                    description: "Severe decrease in food intake over the past 3 months",
                 },
                 {
                     label: "moderate",
@@ -37,9 +37,9 @@ const mnaSFConfig: ScreeningConfig = {
                     description: "Moderate decrease in food intake over the past 3 months",
                 },
                 {
-                    label: "severe decrease in food intake",
+                    label: "no decrease in food intake",
                     value: 2,
-                    description: "Severe decrease in food intake over the past 3 months",
+                    description: "No decrease in food intake over the past 3 months",
                 },
             ],
         },
@@ -54,19 +54,19 @@ const mnaSFConfig: ScreeningConfig = {
                     description: "Weight loss greater than 3 kg",
                 },
                 {
-                    label: "1 - 3 kg",
+                    label: "does not know",
                     value: 1,
+                    description: "Patient does not know weight loss amount",
+                },
+                {
+                    label: "1 - 3 kg",
+                    value: 2,
                     description: "Weight loss between 1 and 3 kg",
                 },
                 {
                     label: "no weight loss",
-                    value: 2,
-                    description: "No weight loss",
-                },
-                {
-                    label: "does not know",
                     value: 3,
-                    description: "Patient does not know weight loss amount",
+                    description: "No weight loss",
                 },
             ],
         },
