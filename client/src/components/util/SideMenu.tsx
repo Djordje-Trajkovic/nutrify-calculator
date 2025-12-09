@@ -12,6 +12,10 @@ import {
     SignOut,
     Carrot,
     X,
+    MonitorArrowUp,
+    Book,
+    UsersThree,
+    BookOpenText,
 } from "@phosphor-icons/react"
 import { MenuOption } from "@/utils/types"
 import Cookies from "js-cookie"
@@ -20,18 +24,10 @@ import { useRouter, usePathname } from "next/navigation"
 const SideMenu: React.FC = () => {
     const [menuOptions, setMenuOptions] = useState<MenuOption[]>([])
     const [expandedItem, setExpandedItem] = useState<string | null>(null)
-    const [mobileModalOption, setMobileModalOption] = useState<MenuOption | null>(null)
+    const [mobileModalOption, setMobileModalOption] =
+        useState<MenuOption | null>(null)
     const router = useRouter()
     const pathname = usePathname()
-
-    // Calculator suboptions
-    const calculatorSuboptions: MenuOption[] = [
-        {
-            icon: <Carrot size={20} />,
-            title: "Create Meal Plan",
-            path: "/calculator/meal",
-        },
-    ]
 
     useEffect(() => {
         const fetchUserRole = async () => {
@@ -61,15 +57,29 @@ const SideMenu: React.FC = () => {
                                     path: "/dashboard",
                                 },
                                 {
-                                    icon: <Calculator size={20} />,
-                                    title: "Calculator",
-                                    path: "/calculator",
-                                    suboptions: calculatorSuboptions,
+                                    icon: <Carrot size={20} />,
+                                    title: "Create Meal Plan",
+                                    path: "/meal-calculator",
                                 },
                                 {
-                                    icon: <Notebook size={20} />,
-                                    title: "Diary",
-                                    path: "/diary",
+                                    icon: <MonitorArrowUp size={20} />,
+                                    title: "Screening Tools",
+                                    path: "/screening",
+                                },
+                                {
+                                    icon: <Calculator size={20} />,
+                                    title: "Calculators",
+                                    path: "/calculator",
+                                },
+                                {
+                                    icon: <BookOpenText size={20} />,
+                                    title: "Dietetics",
+                                    path: "/dietetics",
+                                },
+                                {
+                                    icon: <UsersThree size={20} />,
+                                    title: "Clients",
+                                    path: "/clients",
                                 },
                             )
                         } else if (role === "User-Free") {
@@ -107,7 +117,7 @@ const SideMenu: React.FC = () => {
         }
 
         fetchUserRole()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     // Auto-expand calculator if on calculator route
@@ -142,9 +152,7 @@ const SideMenu: React.FC = () => {
     return (
         <>
             {/* Desktop Sidebar */}
-            <div
-                className="fixed top-0 left-0 z-40 hidden h-screen w-[92px] flex-col items-center justify-between gap-6 overflow-visible bg-white p-6 shadow-[0_0_8px_rgba(0,0,0,0.25)] md:flex"
-            >
+            <div className="fixed top-0 left-0 z-40 hidden h-screen w-[92px] flex-col items-center justify-between gap-6 overflow-visible bg-white p-6 shadow-[0_0_8px_rgba(0,0,0,0.25)] md:flex">
                 <div className="flex w-full flex-col items-center gap-6">
                     <div className="flex h-16 w-16 items-center justify-center">
                         <Image
@@ -166,7 +174,9 @@ const SideMenu: React.FC = () => {
                             title={option.title}
                             suboptions={option.suboptions}
                             isExpanded={expandedItem === option.path}
-                            onToggleExpand={() => handleToggleExpand(option.path)}
+                            onToggleExpand={() =>
+                                handleToggleExpand(option.path)
+                            }
                         />
                     ))}
                     <div className="h-[2px] w-full bg-[#F6F6F6]"></div>
@@ -200,11 +210,10 @@ const SideMenu: React.FC = () => {
                             className={`flex h-11 w-11 items-center justify-center rounded-lg transition duration-200 ${
                                 isActive
                                     ? "bg-DarkGreen text-white"
-                                    : "bg-transparent text-[#757575] hover:bg-DarkGreen hover:text-white"
+                                    : "hover:bg-DarkGreen bg-transparent text-[#757575] hover:text-white"
                             }`}
                         >
                             {option.icon}
-                           
                         </button>
                     )
                 })}
@@ -213,7 +222,7 @@ const SideMenu: React.FC = () => {
                     className={`flex h-11 w-11 items-center justify-center rounded-lg transition duration-200 ${
                         pathname === "/settings"
                             ? "bg-DarkGreen text-white"
-                            : "bg-transparent text-[#757575] hover:bg-DarkGreen hover:text-white"
+                            : "hover:bg-DarkGreen bg-transparent text-[#757575] hover:text-white"
                     }`}
                 >
                     <Gear size={20} />
@@ -237,7 +246,7 @@ const SideMenu: React.FC = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-4 flex items-center justify-between">
-                            <h3 className="font-Poppins text-lg font-semibold text-DarkGreen">
+                            <h3 className="font-Poppins text-DarkGreen text-lg font-semibold">
                                 {mobileModalOption.title}
                             </h3>
                             <button
@@ -253,11 +262,15 @@ const SideMenu: React.FC = () => {
                                 return (
                                     <button
                                         key={suboption.path}
-                                        onClick={() => handleMobileSuboptionClick(suboption.path)}
+                                        onClick={() =>
+                                            handleMobileSuboptionClick(
+                                                suboption.path,
+                                            )
+                                        }
                                         className={`flex items-center gap-3 rounded-lg p-3 transition duration-200 ${
                                             isActive
                                                 ? "bg-DarkGreen text-white"
-                                                : "bg-gray-50 text-[#757575] hover:bg-DarkGreen hover:text-white"
+                                                : "hover:bg-DarkGreen bg-gray-50 text-[#757575] hover:text-white"
                                         }`}
                                     >
                                         <div className="flex h-10 w-10 items-center justify-center">
