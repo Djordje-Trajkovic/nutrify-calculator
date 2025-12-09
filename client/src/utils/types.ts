@@ -260,3 +260,28 @@ export interface MedicalFoodMenu {
     updatedAt?: string
     publishedAt?: string
 }
+
+// Screening Tool Types
+export type ScreeningOption = {
+    label: string
+    value: string | number
+    description?: string
+    details?: string[]
+}
+
+export type ScreeningQuestion = {
+    id: string
+    title: string
+    options: ScreeningOption[]
+    section?: string
+}
+
+export type ScreeningConfig = {
+    name: string
+    questions: ScreeningQuestion[]
+    evaluateScore: (selections: Record<string, string | number>) => {
+        score: number
+        interpretation: string
+        riskLevel: string
+    }
+}

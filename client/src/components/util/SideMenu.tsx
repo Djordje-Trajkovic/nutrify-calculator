@@ -13,7 +13,6 @@ import {
     Carrot,
     X,
     MonitorArrowUp,
-    Book,
     UsersThree,
     BookOpenText,
 } from "@phosphor-icons/react"
@@ -117,7 +116,6 @@ const SideMenu: React.FC = () => {
         }
 
         fetchUserRole()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     // Auto-expand calculator if on calculator route
