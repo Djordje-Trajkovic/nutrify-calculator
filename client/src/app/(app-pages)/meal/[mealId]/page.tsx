@@ -1,8 +1,6 @@
 "use server"
 
 import { cookies } from "next/headers"
-import SideMenu from "@/components/util/SideMenu"
-import Header from "@/components/util/AppHeader"
 
 import { redirect } from "next/navigation"
 import AppContainer from "@/components/util/AppContainer"
@@ -72,41 +70,35 @@ export default async function SingleMeal() {
 
 
     return (
-        <div className="h-full min-h-screen w-full bg-[#FAF9F6]">
-            <SideMenu />
-            <Header />
-            <div className="bg-[#FAF9F6] pt-[100px] pb-10">
-                <AppContainer>
-                    <div className="flex flex-col gap-6">
-                        <YourNextMeal
-                            nextMealProp={fetchedMeal[0]}
-                            isNextMealComponent={false}
-                        />
-                        <HowToMakeMeal
-                            mealInstructionProp={
-                                fetchedMeal[0]?.meal?.detailePreparation
+        <AppContainer>
+            <div className="flex flex-col gap-6">
+                <YourNextMeal
+                    nextMealProp={fetchedMeal[0]}
+                    isNextMealComponent={false}
+                />
+                <HowToMakeMeal
+                    mealInstructionProp={
+                        fetchedMeal[0]?.meal?.detailePreparation
+                    }
+                    videoInstructions={fetchedMeal[0]?.meal?.videoUrl}
+                />
+                <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-4 lg:grid-rows-1">
+                    <div className="h-full w-full lg:col-span-2">
+                        <NecessaryGroceries
+                            necessaryGroceries={
+                                fetchedMeal[0]?.meal?.grocerys
                             }
-                            videoInstructions={fetchedMeal[0]?.meal?.videoUrl}
-                        />
-                        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-4 lg:grid-rows-1">
-                            <div className="h-full w-full lg:col-span-2">
-                                <NecessaryGroceries
-                                    necessaryGroceries={
-                                        fetchedMeal[0]?.meal?.grocerys
-                                    }
-                                ></NecessaryGroceries>
-                            </div>
-                            <div className="h-full w-full lg:col-span-2">
-                                <ContentOfMeal
-                                    necessaryGroceries={
-                                        fetchedMeal[0]?.meal?.grocerys
-                                    }
-                                />
-                            </div>
-                        </div>
+                        ></NecessaryGroceries>
                     </div>
-                </AppContainer>
+                    <div className="h-full w-full lg:col-span-2">
+                        <ContentOfMeal
+                            necessaryGroceries={
+                                fetchedMeal[0]?.meal?.grocerys
+                            }
+                        />
+                    </div>
+                </div>
             </div>
-        </div>
+        </AppContainer>
     )
 }
