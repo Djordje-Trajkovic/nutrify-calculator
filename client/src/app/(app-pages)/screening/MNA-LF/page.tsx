@@ -488,7 +488,7 @@ export default function MNALFPage() {
                         }}
                     >
                         {view === "form"
-                            ? "Please answer all 18 questions to evaluate nutritional status"
+                            ? "Please answer all 17 questions to evaluate nutritional status"
                             : "Evaluation Results"}
                     </Typography>
                 </Box>
