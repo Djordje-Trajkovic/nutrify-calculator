@@ -4,7 +4,7 @@ import { Typography, Box, Checkbox, FormControlLabel, FormGroup, Button } from "
 import AppContainer from "@/components/util/AppContainer"
 import ScreeningResults from "@/components/screening/ScreeningResults"
 import ScreeningPDFPreviewModal from "@/components/screening/ScreeningPDFPreviewModal"
-import { ScreeningConfig, ScreeningQuestion } from "@/utils/types"
+import { ScreeningQuestion } from "@/utils/types"
 
 // GLIM Interpretation Texts
 const GLIM_INTERPRETATIONS = {
@@ -16,13 +16,6 @@ const GLIM_INTERPRETATIONS = {
         "The patient meets GLIM criteria for Stage 2 (Severe) Malnutrition. At least one severe phenotypic criterion and one severe etiologic criterion are present. Immediate and aggressive nutritional intervention is required. Urgent referral to dietitian and nutritional support team is critical.",
     mixedMalnutrition:
         "The patient meets criteria for malnutrition with mixed severity indicators. Clinical judgment should be used to determine the appropriate stage and intervention level. Consider the most severe indicators when planning nutritional care.",
-}
-
-// GLIM Configuration (for PDF generation)
-const glimConfig: ScreeningConfig = {
-    name: "GLIM (Global Leadership Initiative on Malnutrition)",
-    questions: [] as ScreeningQuestion[], // Custom form, questions populated dynamically
-    evaluateScore: () => ({ score: 0, interpretation: "", riskLevel: "" }),
 }
 
 export default function GLIMPage() {
