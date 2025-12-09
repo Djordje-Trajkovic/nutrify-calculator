@@ -8,6 +8,11 @@ export default function ScreeningPage() {
             href: '/screening/NRS_2002',
         },
         {
+            title: 'MNA-SF',
+            description: 'Mini Nutritional Assessment Short Form',
+            href: '/screening/MNA-SF',
+        },
+        {
             title: 'MUST',
             description: 'Malnutrition Universal Screening Tool',
             href: '/screening/must',
