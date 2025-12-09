@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     },
     riskLevelContainer: {
         padding: 12,
-        backgroundColor: "#00473C",
         marginBottom: 10,
     },
     riskLevelText: {
@@ -137,6 +136,12 @@ export default function ScreeningPDFDocument({
         return option ? option.label : String(value)
     }
 
+    const getRiskLevelColor = (): string => {
+        if (riskLevel.toLowerCase().includes("high")) return "#d32f2f"
+        if (riskLevel.toLowerCase().includes("moderate")) return "#f57c00"
+        return "#01b011"
+    }
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -169,7 +174,12 @@ export default function ScreeningPDFDocument({
                 <View style={styles.scoreContainer}>
                     <Text style={styles.scoreTitle}>Evaluation Results</Text>
                     <Text style={styles.scoreValue}>{score}</Text>
-                    <View style={styles.riskLevelContainer}>
+                    <View
+                        style={[
+                            styles.riskLevelContainer,
+                            { backgroundColor: getRiskLevelColor() },
+                        ]}
+                    >
                         <Text style={styles.riskLevelText}>{riskLevel}</Text>
                     </View>
                     <Text style={styles.interpretationText}>
