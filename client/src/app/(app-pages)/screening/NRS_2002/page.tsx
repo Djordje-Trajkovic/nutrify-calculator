@@ -7,6 +7,16 @@ import ScreeningResults from "@/components/screening/ScreeningResults"
 import ScreeningPDFPreviewModal from "@/components/screening/ScreeningPDFPreviewModal"
 import { ScreeningConfig } from "@/utils/types"
 
+// NRS-2002 Interpretation Texts
+const NRS2002_INTERPRETATIONS = {
+    noRisk:
+        "The patient has a score of less than 3 and is not at nutritional risk. Weekly rescreening is recommended for patients in hospital. If the patient is scheduled for a major operation, a preventive nutritional care plan should be considered to avoid the associated risk status.",
+    moderateRisk:
+        "The patient is at moderate nutritional risk with a score of 3-4. Nutritional support should be initiated. Nutritional care planning and monitoring should be established. Weekly reassessment of nutritional status is recommended.",
+    highRisk:
+        "The patient is at high nutritional risk with a score of 5 or more. Immediate nutritional intervention is required. A comprehensive nutritional care plan should be implemented without delay. Close monitoring and frequent reassessment of nutritional status are essential.",
+}
+
 // NRS-2002 Configuration
 const nrs2002Config: ScreeningConfig = {
     name: "NRS-2002 (Nutritional Risk Screening 2002)",
@@ -95,16 +105,13 @@ const nrs2002Config: ScreeningConfig = {
 
         if (totalScore < 3) {
             riskLevel = "No Nutritional Risk"
-            interpretation =
-                "The patient has a score of less than 3 and is not at nutritional risk. Weekly rescreening is recommended for patients in hospital. If the patient is scheduled for a major operation, a preventive nutritional care plan should be considered to avoid the associated risk status."
+            interpretation = NRS2002_INTERPRETATIONS.noRisk
         } else if (totalScore >= 3 && totalScore <= 4) {
             riskLevel = "Moderate Nutritional Risk"
-            interpretation =
-                "The patient is at moderate nutritional risk with a score of 3-4. Nutritional support should be initiated. Nutritional care planning and monitoring should be established. Weekly reassessment of nutritional status is recommended."
+            interpretation = NRS2002_INTERPRETATIONS.moderateRisk
         } else {
             riskLevel = "High Nutritional Risk"
-            interpretation =
-                "The patient is at high nutritional risk with a score of 5 or more. Immediate nutritional intervention is required. A comprehensive nutritional care plan should be implemented without delay. Close monitoring and frequent reassessment of nutritional status are essential."
+            interpretation = NRS2002_INTERPRETATIONS.highRisk
         }
 
         return {
