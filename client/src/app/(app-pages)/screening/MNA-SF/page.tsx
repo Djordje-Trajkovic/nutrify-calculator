@@ -175,7 +175,7 @@ const mnaSFConfig: ScreeningConfig = {
         if (totalScore >= 12) {
             riskLevel = "Normal nutritional status"
             interpretation = MNA_SF_INTERPRETATIONS.normal
-        } else if (totalScore >= 8 && totalScore <= 11) {
+        } else if (totalScore >= 8) {
             riskLevel = "At risk of malnutrition"
             interpretation = MNA_SF_INTERPRETATIONS.atRisk
         } else {
