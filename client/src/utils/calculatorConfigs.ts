@@ -93,8 +93,8 @@ export const bmiCalculatorConfig: CalculatorConfig = {
 
 export const bmrCalculatorConfig: CalculatorConfig = {
     id: "bmr",
-    name: "BMR Calculator",
-    description: "Basal Metabolic Rate - Calculate your resting energy expenditure",
+    name: "Mifflin-St.Jeor Equation",
+    description: "Basal Metabolic Rate - Calculate using the Mifflin-St.Jeor equation",
     fields: [
         {
             id: "gender",
@@ -133,22 +133,70 @@ export const bmrCalculatorConfig: CalculatorConfig = {
             min: 100,
             max: 250,
         },
+        {
+            id: "activityFactor",
+            label: "Activity Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Sedentary (1.2)", value: "1.2" },
+                { label: "Lightly active (1.375)", value: "1.375" },
+                { label: "Moderately active (1.55)", value: "1.55" },
+                { label: "Very active (1.725)", value: "1.725" },
+                { label: "Extra active (1.9)", value: "1.9" },
+            ],
+        },
+        {
+            id: "diseaseFactor",
+            label: "Disease Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No disease (1.0)", value: "1.0" },
+                { label: "Minor surgery (1.2)", value: "1.2" },
+                { label: "Major surgery (1.3-1.5)", value: "1.4" },
+                { label: "Sepsis (1.3-1.5)", value: "1.4" },
+                { label: "Cancer (1.1-1.3)", value: "1.2" },
+                { label: "Burns (1.5-2.0)", value: "1.75" },
+            ],
+        },
+        {
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
     ],
     calculate: (inputs) => {
         const gender = inputs.gender as string
         const age = Number(inputs.age)
         const weight = Number(inputs.weight)
         const height = Number(inputs.height)
+        const activityFactor = Number(inputs.activityFactor)
+        const diseaseFactor = Number(inputs.diseaseFactor)
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         const bmr = calculateBMR(gender, age, weight, height)
         
-        const interpretation = `Your Basal Metabolic Rate (BMR) is ${Math.round(bmr)} calories per day. This is the number of calories your body needs to maintain basic physiological functions at rest. To determine your total daily calorie needs, multiply your BMR by your activity level factor.`
+        // Apply activity factor and disease factor
+        let totalEnergy = bmr * activityFactor * diseaseFactor
+        
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            totalEnergy = totalEnergy * 0.8
+        }
+        
+        const interpretation = `Using the Mifflin-St.Jeor equation, your Basal Metabolic Rate is ${Math.round(bmr)} kcal/day. With activity factor (${activityFactor}) and disease factor (${diseaseFactor})${severeRenalFailure ? ' and adjustment for severe renal failure' : ''}, your total energy requirement is ${Math.round(totalEnergy)} kcal/day.`
         
         return {
-            value: Math.round(bmr),
+            value: Math.round(totalEnergy),
             unit: "kcal/day",
             interpretation,
-            category: "Resting Energy Expenditure",
+            category: "Total Energy Requirement",
         }
     },
 }
@@ -325,12 +373,52 @@ export const harrisBenedictCalculatorConfig: CalculatorConfig = {
             min: 100,
             max: 250,
         },
+        {
+            id: "activityFactor",
+            label: "Activity Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Sedentary (1.2)", value: "1.2" },
+                { label: "Lightly active (1.375)", value: "1.375" },
+                { label: "Moderately active (1.55)", value: "1.55" },
+                { label: "Very active (1.725)", value: "1.725" },
+                { label: "Extra active (1.9)", value: "1.9" },
+            ],
+        },
+        {
+            id: "diseaseFactor",
+            label: "Disease Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No disease (1.0)", value: "1.0" },
+                { label: "Minor surgery (1.2)", value: "1.2" },
+                { label: "Major surgery (1.3-1.5)", value: "1.4" },
+                { label: "Sepsis (1.3-1.5)", value: "1.4" },
+                { label: "Cancer (1.1-1.3)", value: "1.2" },
+                { label: "Burns (1.5-2.0)", value: "1.75" },
+            ],
+        },
+        {
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
     ],
     calculate: (inputs) => {
         const gender = inputs.gender as string
         const age = Number(inputs.age)
         const weight = Number(inputs.weight)
         const height = Number(inputs.height)
+        const activityFactor = Number(inputs.activityFactor)
+        const diseaseFactor = Number(inputs.diseaseFactor)
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Harris-Benedict Equation (Revised 1984)
         let bmr: number
@@ -340,13 +428,21 @@ export const harrisBenedictCalculatorConfig: CalculatorConfig = {
             bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
         }
         
-        const interpretation = `Using the Harris-Benedict equation (revised 1984), your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This represents the minimum energy your body needs to maintain vital functions at rest.`
+        // Apply activity factor and disease factor
+        let totalEnergy = bmr * activityFactor * diseaseFactor
+        
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            totalEnergy = totalEnergy * 0.8
+        }
+        
+        const interpretation = `Using the Harris-Benedict equation (revised 1984), your Basal Metabolic Rate is ${Math.round(bmr)} kcal/day. With activity factor (${activityFactor}) and disease factor (${diseaseFactor})${severeRenalFailure ? ' and adjustment for severe renal failure' : ''}, your total energy requirement is ${Math.round(totalEnergy)} kcal/day.`
         
         return {
-            value: Math.round(bmr),
+            value: Math.round(totalEnergy),
             unit: "kcal/day",
             interpretation,
-            category: "Basal Metabolic Rate",
+            category: "Total Energy Requirement",
         }
     },
 }
@@ -385,11 +481,51 @@ export const schofieldCalculatorConfig: CalculatorConfig = {
             min: 20,
             max: 300,
         },
+        {
+            id: "activityFactor",
+            label: "Activity Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Sedentary (1.2)", value: "1.2" },
+                { label: "Lightly active (1.375)", value: "1.375" },
+                { label: "Moderately active (1.55)", value: "1.55" },
+                { label: "Very active (1.725)", value: "1.725" },
+                { label: "Extra active (1.9)", value: "1.9" },
+            ],
+        },
+        {
+            id: "diseaseFactor",
+            label: "Disease Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No disease (1.0)", value: "1.0" },
+                { label: "Minor surgery (1.2)", value: "1.2" },
+                { label: "Major surgery (1.3-1.5)", value: "1.4" },
+                { label: "Sepsis (1.3-1.5)", value: "1.4" },
+                { label: "Cancer (1.1-1.3)", value: "1.2" },
+                { label: "Burns (1.5-2.0)", value: "1.75" },
+            ],
+        },
+        {
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
     ],
     calculate: (inputs) => {
         const gender = inputs.gender as string
         const age = Number(inputs.age)
         const weight = Number(inputs.weight)
+        const activityFactor = Number(inputs.activityFactor)
+        const diseaseFactor = Number(inputs.diseaseFactor)
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Schofield Equation (WHO recommendation)
         let bmr: number
@@ -423,13 +559,21 @@ export const schofieldCalculatorConfig: CalculatorConfig = {
             }
         }
         
-        const interpretation = `Using the Schofield equation (WHO recommended), your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This equation is widely used internationally and considers age-specific metabolic differences.`
+        // Apply activity factor and disease factor
+        let totalEnergy = bmr * activityFactor * diseaseFactor
+        
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            totalEnergy = totalEnergy * 0.8
+        }
+        
+        const interpretation = `Using the Schofield equation (WHO recommended), your Basal Metabolic Rate is ${Math.round(bmr)} kcal/day. With activity factor (${activityFactor}) and disease factor (${diseaseFactor})${severeRenalFailure ? ' and adjustment for severe renal failure' : ''}, your total energy requirement is ${Math.round(totalEnergy)} kcal/day.`
         
         return {
-            value: Math.round(bmr),
+            value: Math.round(totalEnergy),
             unit: "kcal/day",
             interpretation,
-            category: "Basal Metabolic Rate",
+            category: "Total Energy Requirement",
         }
     },
 }
@@ -459,10 +603,50 @@ export const owenCalculatorConfig: CalculatorConfig = {
             min: 20,
             max: 300,
         },
+        {
+            id: "activityFactor",
+            label: "Activity Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Sedentary (1.2)", value: "1.2" },
+                { label: "Lightly active (1.375)", value: "1.375" },
+                { label: "Moderately active (1.55)", value: "1.55" },
+                { label: "Very active (1.725)", value: "1.725" },
+                { label: "Extra active (1.9)", value: "1.9" },
+            ],
+        },
+        {
+            id: "diseaseFactor",
+            label: "Disease Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No disease (1.0)", value: "1.0" },
+                { label: "Minor surgery (1.2)", value: "1.2" },
+                { label: "Major surgery (1.3-1.5)", value: "1.4" },
+                { label: "Sepsis (1.3-1.5)", value: "1.4" },
+                { label: "Cancer (1.1-1.3)", value: "1.2" },
+                { label: "Burns (1.5-2.0)", value: "1.75" },
+            ],
+        },
+        {
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
     ],
     calculate: (inputs) => {
         const gender = inputs.gender as string
         const weight = Number(inputs.weight)
+        const activityFactor = Number(inputs.activityFactor)
+        const diseaseFactor = Number(inputs.diseaseFactor)
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Owen Equation
         let bmr: number
@@ -472,13 +656,21 @@ export const owenCalculatorConfig: CalculatorConfig = {
             bmr = 795 + (7.18 * weight)
         }
         
-        const interpretation = `Using the Owen equation, your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This equation is simpler and only requires weight, making it useful for quick estimates.`
+        // Apply activity factor and disease factor
+        let totalEnergy = bmr * activityFactor * diseaseFactor
+        
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            totalEnergy = totalEnergy * 0.8
+        }
+        
+        const interpretation = `Using the Owen equation, your Basal Metabolic Rate is ${Math.round(bmr)} kcal/day. With activity factor (${activityFactor}) and disease factor (${diseaseFactor})${severeRenalFailure ? ' and adjustment for severe renal failure' : ''}, your total energy requirement is ${Math.round(totalEnergy)} kcal/day.`
         
         return {
-            value: Math.round(bmr),
+            value: Math.round(totalEnergy),
             unit: "kcal/day",
             interpretation,
-            category: "Basal Metabolic Rate",
+            category: "Total Energy Requirement",
         }
     },
 }
@@ -498,20 +690,68 @@ export const cunninghamCalculatorConfig: CalculatorConfig = {
             min: 10,
             max: 200,
         },
+        {
+            id: "activityFactor",
+            label: "Activity Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Sedentary (1.2)", value: "1.2" },
+                { label: "Lightly active (1.375)", value: "1.375" },
+                { label: "Moderately active (1.55)", value: "1.55" },
+                { label: "Very active (1.725)", value: "1.725" },
+                { label: "Extra active (1.9)", value: "1.9" },
+            ],
+        },
+        {
+            id: "diseaseFactor",
+            label: "Disease Factor",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No disease (1.0)", value: "1.0" },
+                { label: "Minor surgery (1.2)", value: "1.2" },
+                { label: "Major surgery (1.3-1.5)", value: "1.4" },
+                { label: "Sepsis (1.3-1.5)", value: "1.4" },
+                { label: "Cancer (1.1-1.3)", value: "1.2" },
+                { label: "Burns (1.5-2.0)", value: "1.75" },
+            ],
+        },
+        {
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
     ],
     calculate: (inputs) => {
         const leanBodyMass = Number(inputs.leanBodyMass)
+        const activityFactor = Number(inputs.activityFactor)
+        const diseaseFactor = Number(inputs.diseaseFactor)
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Cunningham Equation
         const rmr = 500 + (22 * leanBodyMass)
         
-        const interpretation = `Using the Cunningham equation, your Resting Metabolic Rate is ${Math.round(rmr)} calories per day. This equation is specifically designed for individuals who know their lean body mass and is particularly accurate for athletes and those with measured body composition.`
+        // Apply activity factor and disease factor
+        let totalEnergy = rmr * activityFactor * diseaseFactor
+        
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            totalEnergy = totalEnergy * 0.8
+        }
+        
+        const interpretation = `Using the Cunningham equation, your Resting Metabolic Rate is ${Math.round(rmr)} kcal/day. With activity factor (${activityFactor}) and disease factor (${diseaseFactor})${severeRenalFailure ? ' and adjustment for severe renal failure' : ''}, your total energy requirement is ${Math.round(totalEnergy)} kcal/day.`
         
         return {
-            value: Math.round(rmr),
+            value: Math.round(totalEnergy),
             unit: "kcal/day",
             interpretation,
-            category: "Resting Metabolic Rate",
+            category: "Total Energy Requirement",
         }
     },
 }
@@ -551,13 +791,43 @@ export const iretonJonesCalculatorConfig: CalculatorConfig = {
             ],
         },
         {
-            id: "ventilated",
-            label: "Mechanically Ventilated",
+            id: "severeRenalFailure",
+            label: "Severe Renal Failure without Dialysis",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
+        {
+            id: "spontaneousBreathing",
+            label: "Spontaneous Breathing",
             type: "select",
             required: true,
             options: [
                 { label: "Yes", value: "yes" },
+                { label: "No (Mechanically Ventilated)", value: "no" },
+            ],
+        },
+        {
+            id: "trauma",
+            label: "State of Trauma",
+            type: "select",
+            required: true,
+            options: [
                 { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
+            ],
+        },
+        {
+            id: "burn",
+            label: "State of Burn",
+            type: "select",
+            required: true,
+            options: [
+                { label: "No", value: "no" },
+                { label: "Yes", value: "yes" },
             ],
         },
     ],
@@ -565,19 +835,27 @@ export const iretonJonesCalculatorConfig: CalculatorConfig = {
         const weight = Number(inputs.weight)
         const age = Number(inputs.age)
         const gender = inputs.gender as string
-        const ventilated = inputs.ventilated as string
+        const severeRenalFailure = inputs.severeRenalFailure === "yes"
+        const spontaneousBreathing = inputs.spontaneousBreathing === "yes"
+        const trauma = inputs.trauma === "yes"
+        const burn = inputs.burn === "yes"
         
         // Ireton-Jones Equation
         let ee: number
-        if (ventilated === "yes") {
+        if (!spontaneousBreathing) {
             // Ventilated version
-            ee = 1925 - (10 * age) + (5 * weight) + (281 * (gender === "male" ? 1 : 0)) + (292 * 1) - (851 * 0)
+            ee = 1925 - (10 * age) + (5 * weight) + (281 * (gender === "male" ? 1 : 0)) + (292 * (trauma ? 1 : 0)) - (851 * (burn ? 1 : 0))
         } else {
             // Spontaneously breathing version
-            ee = 629 - (11 * age) + (25 * weight) - (609 * 0)
+            ee = 629 - (11 * age) + (25 * weight) - (609 * (burn ? 1 : 0))
         }
         
-        const interpretation = `Using the Ireton-Jones equation, your estimated energy expenditure is ${Math.round(ee)} calories per day. This equation is specifically designed for critically ill patients and considers factors like mechanical ventilation status.`
+        // Adjust for severe renal failure (reduce by 20%)
+        if (severeRenalFailure) {
+            ee = ee * 0.8
+        }
+        
+        const interpretation = `Using the Ireton-Jones equation, your estimated energy expenditure is ${Math.round(ee)} kcal/day${severeRenalFailure ? ' (adjusted for severe renal failure)' : ''}. This equation is specifically designed for critically ill patients and considers factors like mechanical ventilation, trauma, and burn states.`
         
         return {
             value: Math.round(ee),
