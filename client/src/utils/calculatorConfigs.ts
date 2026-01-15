@@ -282,9 +282,320 @@ export const ibwCalculatorConfig: CalculatorConfig = {
     },
 }
 
+// Harris-Benedict Equation Calculator
+export const harrisBenedictCalculatorConfig: CalculatorConfig = {
+    id: "harris-benedict",
+    name: "Harris-Benedict Equation",
+    description: "Calculate BMR using the Harris-Benedict equation (revised 1984)",
+    fields: [
+        {
+            id: "gender",
+            label: "Gender",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Male", value: "male" },
+                { label: "Female", value: "female" },
+            ],
+        },
+        {
+            id: "age",
+            label: "Age",
+            type: "number",
+            unit: "years",
+            required: true,
+            min: 1,
+            max: 120,
+        },
+        {
+            id: "weight",
+            label: "Weight",
+            type: "number",
+            unit: "kg",
+            required: true,
+            min: 20,
+            max: 300,
+        },
+        {
+            id: "height",
+            label: "Height",
+            type: "number",
+            unit: "cm",
+            required: true,
+            min: 100,
+            max: 250,
+        },
+    ],
+    calculate: (inputs) => {
+        const gender = inputs.gender as string
+        const age = Number(inputs.age)
+        const weight = Number(inputs.weight)
+        const height = Number(inputs.height)
+        
+        // Harris-Benedict Equation (Revised 1984)
+        let bmr: number
+        if (gender === "male") {
+            bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
+        } else {
+            bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
+        }
+        
+        const interpretation = `Using the Harris-Benedict equation (revised 1984), your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This represents the minimum energy your body needs to maintain vital functions at rest.`
+        
+        return {
+            value: Math.round(bmr),
+            unit: "kcal/day",
+            interpretation,
+            category: "Basal Metabolic Rate",
+        }
+    },
+}
+
+// Schofield (WHO) Equation Calculator
+export const schofieldCalculatorConfig: CalculatorConfig = {
+    id: "schofield",
+    name: "Schofield (WHO) Equation",
+    description: "Calculate BMR using the Schofield equation recommended by WHO",
+    fields: [
+        {
+            id: "gender",
+            label: "Gender",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Male", value: "male" },
+                { label: "Female", value: "female" },
+            ],
+        },
+        {
+            id: "age",
+            label: "Age",
+            type: "number",
+            unit: "years",
+            required: true,
+            min: 1,
+            max: 120,
+        },
+        {
+            id: "weight",
+            label: "Weight",
+            type: "number",
+            unit: "kg",
+            required: true,
+            min: 20,
+            max: 300,
+        },
+    ],
+    calculate: (inputs) => {
+        const gender = inputs.gender as string
+        const age = Number(inputs.age)
+        const weight = Number(inputs.weight)
+        
+        // Schofield Equation (WHO recommendation)
+        let bmr: number
+        if (gender === "male") {
+            if (age < 3) {
+                bmr = 59.512 * weight - 30.4
+            } else if (age < 10) {
+                bmr = 22.706 * weight + 504.3
+            } else if (age < 18) {
+                bmr = 17.686 * weight + 658.2
+            } else if (age < 30) {
+                bmr = 15.057 * weight + 692.2
+            } else if (age < 60) {
+                bmr = 11.472 * weight + 873.1
+            } else {
+                bmr = 11.711 * weight + 587.7
+            }
+        } else {
+            if (age < 3) {
+                bmr = 58.317 * weight - 31.1
+            } else if (age < 10) {
+                bmr = 20.315 * weight + 485.9
+            } else if (age < 18) {
+                bmr = 13.384 * weight + 692.6
+            } else if (age < 30) {
+                bmr = 14.818 * weight + 486.6
+            } else if (age < 60) {
+                bmr = 8.126 * weight + 845.6
+            } else {
+                bmr = 9.082 * weight + 658.5
+            }
+        }
+        
+        const interpretation = `Using the Schofield equation (WHO recommended), your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This equation is widely used internationally and considers age-specific metabolic differences.`
+        
+        return {
+            value: Math.round(bmr),
+            unit: "kcal/day",
+            interpretation,
+            category: "Basal Metabolic Rate",
+        }
+    },
+}
+
+// Owen Equation Calculator
+export const owenCalculatorConfig: CalculatorConfig = {
+    id: "owen",
+    name: "Owen Equation",
+    description: "Calculate BMR using the Owen equation",
+    fields: [
+        {
+            id: "gender",
+            label: "Gender",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Male", value: "male" },
+                { label: "Female", value: "female" },
+            ],
+        },
+        {
+            id: "weight",
+            label: "Weight",
+            type: "number",
+            unit: "kg",
+            required: true,
+            min: 20,
+            max: 300,
+        },
+    ],
+    calculate: (inputs) => {
+        const gender = inputs.gender as string
+        const weight = Number(inputs.weight)
+        
+        // Owen Equation
+        let bmr: number
+        if (gender === "male") {
+            bmr = 879 + (10.2 * weight)
+        } else {
+            bmr = 795 + (7.18 * weight)
+        }
+        
+        const interpretation = `Using the Owen equation, your Basal Metabolic Rate is ${Math.round(bmr)} calories per day. This equation is simpler and only requires weight, making it useful for quick estimates.`
+        
+        return {
+            value: Math.round(bmr),
+            unit: "kcal/day",
+            interpretation,
+            category: "Basal Metabolic Rate",
+        }
+    },
+}
+
+// Cunningham Equation Calculator
+export const cunninghamCalculatorConfig: CalculatorConfig = {
+    id: "cunningham",
+    name: "Cunningham Equation",
+    description: "Calculate RMR using the Cunningham equation (requires lean body mass)",
+    fields: [
+        {
+            id: "leanBodyMass",
+            label: "Lean Body Mass",
+            type: "number",
+            unit: "kg",
+            required: true,
+            min: 10,
+            max: 200,
+        },
+    ],
+    calculate: (inputs) => {
+        const leanBodyMass = Number(inputs.leanBodyMass)
+        
+        // Cunningham Equation
+        const rmr = 500 + (22 * leanBodyMass)
+        
+        const interpretation = `Using the Cunningham equation, your Resting Metabolic Rate is ${Math.round(rmr)} calories per day. This equation is specifically designed for individuals who know their lean body mass and is particularly accurate for athletes and those with measured body composition.`
+        
+        return {
+            value: Math.round(rmr),
+            unit: "kcal/day",
+            interpretation,
+            category: "Resting Metabolic Rate",
+        }
+    },
+}
+
+// Ireton-Jones Equation Calculator
+export const iretonJonesCalculatorConfig: CalculatorConfig = {
+    id: "ireton-jones",
+    name: "Ireton-Jones Equation",
+    description: "Calculate energy needs using the Ireton-Jones equation (for critically ill patients)",
+    fields: [
+        {
+            id: "weight",
+            label: "Weight",
+            type: "number",
+            unit: "kg",
+            required: true,
+            min: 20,
+            max: 300,
+        },
+        {
+            id: "age",
+            label: "Age",
+            type: "number",
+            unit: "years",
+            required: true,
+            min: 1,
+            max: 120,
+        },
+        {
+            id: "gender",
+            label: "Gender",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Male", value: "male" },
+                { label: "Female", value: "female" },
+            ],
+        },
+        {
+            id: "ventilated",
+            label: "Mechanically Ventilated",
+            type: "select",
+            required: true,
+            options: [
+                { label: "Yes", value: "yes" },
+                { label: "No", value: "no" },
+            ],
+        },
+    ],
+    calculate: (inputs) => {
+        const weight = Number(inputs.weight)
+        const age = Number(inputs.age)
+        const gender = inputs.gender as string
+        const ventilated = inputs.ventilated as string
+        
+        // Ireton-Jones Equation
+        let ee: number
+        if (ventilated === "yes") {
+            // Ventilated version
+            ee = 1925 - (10 * age) + (5 * weight) + (281 * (gender === "male" ? 1 : 0)) + (292 * 1) - (851 * 0)
+        } else {
+            // Spontaneously breathing version
+            ee = 629 - (11 * age) + (25 * weight) - (609 * 0)
+        }
+        
+        const interpretation = `Using the Ireton-Jones equation, your estimated energy expenditure is ${Math.round(ee)} calories per day. This equation is specifically designed for critically ill patients and considers factors like mechanical ventilation status.`
+        
+        return {
+            value: Math.round(ee),
+            unit: "kcal/day",
+            interpretation,
+            category: "Energy Expenditure",
+        }
+    },
+}
+
 export const calculatorConfigs = {
     bmi: bmiCalculatorConfig,
     bmr: bmrCalculatorConfig,
     tdee: tdeeCalculatorConfig,
     ibw: ibwCalculatorConfig,
+    "harris-benedict": harrisBenedictCalculatorConfig,
+    schofield: schofieldCalculatorConfig,
+    owen: owenCalculatorConfig,
+    cunningham: cunninghamCalculatorConfig,
+    "ireton-jones": iretonJonesCalculatorConfig,
 }

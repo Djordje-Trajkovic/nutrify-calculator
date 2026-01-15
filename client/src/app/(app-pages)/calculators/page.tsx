@@ -17,10 +17,40 @@ export default function CalculatorsPage() {
             href: "/calculators/bmi",
         },
         {
+            id: "harris-benedict",
+            title: "Harris-Benedict Equation",
+            description: "Calculate BMR using the Harris-Benedict equation (revised 1984)",
+            href: "/calculators/harris-benedict",
+        },
+        {
+            id: "schofield",
+            title: "Schofield (WHO) Equation",
+            description: "Calculate BMR using the WHO-recommended Schofield equation",
+            href: "/calculators/schofield",
+        },
+        {
             id: "bmr",
-            title: "BMR Calculator",
-            description: "Basal Metabolic Rate - Calculate your resting energy expenditure",
+            title: "Mifflin-St.Jeor Equation",
+            description: "Calculate BMR using the Mifflin-St.Jeor equation",
             href: "/calculators/bmr",
+        },
+        {
+            id: "owen",
+            title: "Owen Equation",
+            description: "Calculate BMR using the Owen equation",
+            href: "/calculators/owen",
+        },
+        {
+            id: "cunningham",
+            title: "Cunningham Equation",
+            description: "Calculate RMR using lean body mass",
+            href: "/calculators/cunningham",
+        },
+        {
+            id: "ireton-jones",
+            title: "Ireton-Jones Equation",
+            description: "Calculate energy needs for critically ill patients",
+            href: "/calculators/ireton-jones",
         },
         {
             id: "tdee",
