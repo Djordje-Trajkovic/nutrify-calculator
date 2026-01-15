@@ -285,3 +285,29 @@ export type ScreeningConfig = {
         riskLevel: string
     }
 }
+
+export type CalculatorField = {
+    id: string
+    label: string
+    type: "number" | "select" | "text"
+    unit?: string
+    options?: { label: string; value: string | number }[]
+    required?: boolean
+    min?: number
+    max?: number
+}
+
+export type CalculatorResult = {
+    value: number
+    unit: string
+    interpretation: string
+    category?: string
+}
+
+export type CalculatorConfig = {
+    id: string
+    name: string
+    description: string
+    fields: CalculatorField[]
+    calculate: (inputs: Record<string, string | number>) => CalculatorResult
+}

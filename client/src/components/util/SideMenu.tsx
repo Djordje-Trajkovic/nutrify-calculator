@@ -68,7 +68,7 @@ const SideMenu: React.FC = () => {
                                 {
                                     icon: <Calculator size={20} />,
                                     title: "Calculators",
-                                    path: "/calculator",
+                                    path: "/calculators",
                                 },
                                 {
                                     icon: <BookOpenText size={20} />,
