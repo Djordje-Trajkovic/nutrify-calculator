@@ -1,10 +1,10 @@
 "use client"
-import React, { useState, useEffect } from "react"
-import { Typography, Box, Button } from "@mui/material"
+import React, { useState, useEffect, useMemo } from "react"
+import { Typography, Box, Button, TextField, Select, MenuItem, FormControl, InputLabel } from "@mui/material"
 import AppContainer from "@/components/util/AppContainer"
 import { useSearchParams } from "next/navigation"
 import { calculatorConfigs } from "@/utils/calculatorConfigs"
-import { CalculatorResult, CalculatorConfig } from "@/utils/types"
+import { CalculatorResult, CalculatorConfig, CalculatorField } from "@/utils/types"
 import { Printer } from "@phosphor-icons/react"
 import MultiCalculatorPDFPreviewModal from "@/components/calculator/MultiCalculatorPDFPreviewModal"
 
@@ -20,6 +20,7 @@ export default function MultiCalculatorPage() {
     const [calculatorData, setCalculatorData] = useState<
         Record<string, CalculatorData>
     >({})
+    const [sharedInputs, setSharedInputs] = useState<Record<string, string | number>>({})
     const [showPDFModal, setShowPDFModal] = useState(false)
 
     useEffect(() => {
@@ -44,64 +45,79 @@ export default function MultiCalculatorPage() {
         }
     }, [searchParams])
 
-    const handleInputChange = (
-        calculatorId: string,
-        fieldId: string,
-        value: string | number,
-    ) => {
-        setCalculatorData((prev) => ({
+    // Get all unique fields from selected calculators
+    const uniqueFields = useMemo(() => {
+        const fieldMap = new Map<string, CalculatorField>()
+        
+        selectedCalculators.forEach((id) => {
+            const config = calculatorConfigs[id as keyof typeof calculatorConfigs]
+            if (config) {
+                config.fields.forEach((field) => {
+                    if (!fieldMap.has(field.id)) {
+                        fieldMap.set(field.id, field)
+                    }
+                })
+            }
+        })
+        
+        return Array.from(fieldMap.values())
+    }, [selectedCalculators])
+
+    // Get which calculators are using this field
+    const getCalculatorsUsingField = (fieldId: string): string[] => {
+        return selectedCalculators.filter((id) => {
+            const config = calculatorConfigs[id as keyof typeof calculatorConfigs]
+            return config?.fields.some((f) => f.id === fieldId)
+        })
+    }
+
+    const handleInputChange = (fieldId: string, value: string | number) => {
+        setSharedInputs((prev) => ({
             ...prev,
-            [calculatorId]: {
-                ...prev[calculatorId],
-                inputs: {
-                    ...prev[calculatorId].inputs,
-                    [fieldId]: value,
-                },
-            },
+            [fieldId]: value,
         }))
     }
 
     const handleCalculateAll = () => {
         const updatedData = { ...calculatorData }
-        let hasChanges = false
 
         selectedCalculators.forEach((id) => {
             const data = updatedData[id]
-            // Check if all required fields are filled
+            // Check if all required fields for this calculator are filled
             const allFieldsFilled = data.config.fields.every((field) => {
                 if (!field.required) return true
-                const value = data.inputs[field.id]
+                const value = sharedInputs[field.id]
                 return value !== undefined && value !== "" && value !== null
             })
 
-            if (allFieldsFilled && !data.result) {
-                const result = data.config.calculate(data.inputs)
+            if (allFieldsFilled) {
+                // Build inputs object for this calculator from shared inputs
+                const calculatorInputs: Record<string, string | number> = {}
+                data.config.fields.forEach((field) => {
+                    calculatorInputs[field.id] = sharedInputs[field.id]
+                })
+
+                const result = data.config.calculate(calculatorInputs)
                 updatedData[id] = {
                     ...updatedData[id],
+                    inputs: calculatorInputs,
                     result,
                 }
-                hasChanges = true
             }
         })
 
-        if (hasChanges) {
-            setCalculatorData(updatedData)
-        }
+        setCalculatorData(updatedData)
     }
 
     const handleGeneratePDF = () => {
-        // Calculate any remaining calculators if needed
         handleCalculateAll()
         setShowPDFModal(true)
     }
 
-    const allCalculatorsHaveData = selectedCalculators.every((id) => {
-        const data = calculatorData[id]
-        return data?.config.fields.every((field) => {
-            if (!field.required) return true
-            const value = data.inputs[field.id]
-            return value !== undefined && value !== "" && value !== null
-        })
+    const allRequiredFieldsFilled = uniqueFields.every((field) => {
+        if (!field.required) return true
+        const value = sharedInputs[field.id]
+        return value !== undefined && value !== "" && value !== null
     })
 
     const hasAnyResults = selectedCalculators.some(
@@ -175,130 +191,163 @@ export default function MultiCalculatorPage() {
 
                 <Box
                     sx={{
-                        maxWidth: "1200px",
+                        maxWidth: "900px",
                         margin: "0 auto",
                         padding: { xs: 2, sm: 3 },
                     }}
                 >
-                    {/* All Calculator Forms Grouped */}
-                    <Box sx={{ marginBottom: 4 }}>
-                        {selectedCalculators.map((id) => {
-                            const data = calculatorData[id]
-                            if (!data) return null
-
-                            return (
-                                <Box
-                                    key={id}
-                                    sx={{
-                                        backgroundColor: "#FAF9F6",
-                                        borderRadius: "8px",
-                                        padding: { xs: 2, sm: 3 },
-                                        marginBottom: 3,
-                                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                                        border: "1px solid #e0e0e0",
-                                    }}
-                                >
-                                    <Typography
-                                        variant="h6"
+                    {/* Selected Calculators Info */}
+                    <Box sx={{ marginBottom: 3 }}>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                color: "#00473C",
+                                fontWeight: 600,
+                                marginBottom: 1,
+                            }}
+                        >
+                            Selected Calculators:
+                        </Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                            {selectedCalculators.map((id) => {
+                                const config = calculatorConfigs[id as keyof typeof calculatorConfigs]
+                                return (
+                                    <Box
+                                        key={id}
                                         sx={{
+                                            backgroundColor: "#FAF9F6",
+                                            border: "1px solid #00473C",
+                                            borderRadius: "4px",
+                                            padding: "4px 12px",
+                                            fontSize: "0.875rem",
                                             color: "#00473C",
-                                            fontWeight: 600,
-                                            marginBottom: 2,
-                                            fontSize: { xs: "1rem", sm: "1.25rem" },
                                         }}
                                     >
-                                        {data.config.name}
-                                    </Typography>
-                                    
-                                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, gap: 2 }}>
-                                        {data.config.fields.map((field) => (
-                                            <Box key={field.id}>
-                                                {field.type === "select" ? (
-                                                    <Box>
-                                                        <Typography
-                                                            variant="body2"
-                                                            sx={{
-                                                                color: "#00473C",
-                                                                fontWeight: 600,
-                                                                marginBottom: 0.5,
-                                                            }}
-                                                        >
-                                                            {field.label}
-                                                            {field.required && " *"}
-                                                        </Typography>
-                                                        <select
-                                                            value={data.inputs[field.id] ?? ""}
-                                                            onChange={(e) =>
-                                                                handleInputChange(
-                                                                    id,
-                                                                    field.id,
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            style={{
-                                                                width: "100%",
-                                                                padding: "12px",
-                                                                borderRadius: "4px",
-                                                                border: "1px solid #00473C",
-                                                                fontSize: "1rem",
-                                                                backgroundColor: "#ffffff",
-                                                            }}
-                                                        >
-                                                            <option value="">Select...</option>
-                                                            {field.options?.map((option) => (
-                                                                <option
-                                                                    key={option.value}
-                                                                    value={option.value}
-                                                                >
-                                                                    {option.label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </Box>
-                                                ) : (
-                                                    <Box>
-                                                        <Typography
-                                                            variant="body2"
-                                                            sx={{
-                                                                color: "#00473C",
-                                                                fontWeight: 600,
-                                                                marginBottom: 0.5,
-                                                            }}
-                                                        >
-                                                            {field.label}
-                                                            {field.required && " *"}
-                                                            {field.unit && ` (${field.unit})`}
-                                                        </Typography>
-                                                        <input
-                                                            type={field.type}
-                                                            value={data.inputs[field.id] ?? ""}
-                                                            onChange={(e) =>
-                                                                handleInputChange(
-                                                                    id,
-                                                                    field.id,
-                                                                    field.type === "number"
-                                                                        ? Number(e.target.value)
-                                                                        : e.target.value,
-                                                                )
-                                                            }
-                                                            min={field.min}
-                                                            max={field.max}
-                                                            style={{
-                                                                width: "100%",
-                                                                padding: "12px",
-                                                                borderRadius: "4px",
-                                                                border: "1px solid #00473C",
-                                                                fontSize: "1rem",
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        ))}
+                                        {config?.name}
                                     </Box>
-                                </Box>
-                            )
-                        })}
+                                )
+                            })}
+                        </Box>
+                    </Box>
+
+                    {/* Unified Form with Shared Inputs */}
+                    <Box
+                        sx={{
+                            backgroundColor: "#FAF9F6",
+                            borderRadius: "8px",
+                            padding: { xs: 2, sm: 3 },
+                            marginBottom: 3,
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                            border: "1px solid #e0e0e0",
+                        }}
+                    >
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                color: "#00473C",
+                                fontWeight: 600,
+                                marginBottom: 3,
+                                fontSize: { xs: "1rem", sm: "1.25rem" },
+                            }}
+                        >
+                            Enter Your Information
+                        </Typography>
+
+                        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, gap: 2.5 }}>
+                            {uniqueFields.map((field) => {
+                                const usingCalculators = getCalculatorsUsingField(field.id)
+                                const calculatorNames = usingCalculators
+                                    .map(id => calculatorConfigs[id as keyof typeof calculatorConfigs]?.name)
+                                    .join(", ")
+
+                                return (
+                                    <Box key={field.id}>
+                                        {field.type === "select" ? (
+                                            <FormControl fullWidth>
+                                                <InputLabel
+                                                    sx={{
+                                                        color: "#00473C",
+                                                        "&.Mui-focused": {
+                                                            color: "#00473C",
+                                                        },
+                                                    }}
+                                                >
+                                                    {field.label}
+                                                    {field.required && " *"}
+                                                </InputLabel>
+                                                <Select
+                                                    value={sharedInputs[field.id] ?? ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(field.id, e.target.value)
+                                                    }
+                                                    label={`${field.label}${field.required ? " *" : ""}`}
+                                                    sx={{
+                                                        "& .MuiOutlinedInput-notchedOutline": {
+                                                            borderColor: "#00473C",
+                                                        },
+                                                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                                                            borderColor: "#01b011",
+                                                        },
+                                                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                                            borderColor: "#00473C",
+                                                        },
+                                                    }}
+                                                >
+                                                    {field.options?.map((option) => (
+                                                        <MenuItem
+                                                            key={option.value}
+                                                            value={option.value}
+                                                        >
+                                                            {option.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        ) : (
+                                            <TextField
+                                                fullWidth
+                                                label={field.label}
+                                                type={field.type}
+                                                value={sharedInputs[field.id] ?? ""}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        field.id,
+                                                        field.type === "number"
+                                                            ? Number(e.target.value)
+                                                            : e.target.value,
+                                                    )
+                                                }
+                                                required={field.required}
+                                                inputProps={{
+                                                    min: field.min,
+                                                    max: field.max,
+                                                }}
+                                                sx={{
+                                                    "& .MuiOutlinedInput-root": {
+                                                        "& fieldset": {
+                                                            borderColor: "#00473C",
+                                                        },
+                                                        "&:hover fieldset": {
+                                                            borderColor: "#01b011",
+                                                        },
+                                                        "&.Mui-focused fieldset": {
+                                                            borderColor: "#00473C",
+                                                        },
+                                                    },
+                                                    "& .MuiInputLabel-root": {
+                                                        color: "#00473C",
+                                                        "&.Mui-focused": {
+                                                            color: "#00473C",
+                                                        },
+                                                    },
+                                                }}
+                                                helperText={`${field.unit ? `Unit: ${field.unit}` : ""} ${usingCalculators.length > 1 ? `(Used by: ${calculatorNames})` : ""}`}
+                                            />
+                                        )}
+                                    </Box>
+                                )
+                            })}
+                        </Box>
                     </Box>
 
                     {/* Calculate Button */}
@@ -306,7 +355,7 @@ export default function MultiCalculatorPage() {
                         <Button
                             variant="contained"
                             onClick={handleCalculateAll}
-                            disabled={!allCalculatorsHaveData}
+                            disabled={!allRequiredFieldsFilled}
                             sx={{
                                 backgroundColor: "#00473C",
                                 color: "#ffffff",
