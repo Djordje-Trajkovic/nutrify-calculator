@@ -24,8 +24,16 @@ function calculateBMR(gender: string, age: number, weight: number, height: numbe
 
 // Helper function to map disease factor string values to numeric multipliers
 function getDiseaseFactorValue(diseaseFactor: string | number): number {
-    if (typeof diseaseFactor === 'number') return diseaseFactor
+    // Handle numeric inputs with validation
+    if (typeof diseaseFactor === 'number') {
+        // Validate that the number is finite and positive
+        if (isNaN(diseaseFactor) || !isFinite(diseaseFactor) || diseaseFactor < 0) {
+            return 1.0
+        }
+        return diseaseFactor
+    }
     
+    // Map string identifiers to numeric values
     const diseaseFactorMap: Record<string, number> = {
         'none': 1.0,
         'minor_surgery': 1.2,
