@@ -1,7 +1,13 @@
 "use client"
 import { useState } from "react"
 import Link from "next/link"
-import { Box, Typography, Button, Checkbox, FormControlLabel } from "@mui/material"
+import {
+    Box,
+    Typography,
+    Button,
+    Checkbox,
+    FormControlLabel,
+} from "@mui/material"
 import AppContainer from "@/components/util/AppContainer"
 import { useRouter } from "next/navigation"
 
@@ -13,19 +19,22 @@ export default function CalculatorsPage() {
         {
             id: "bmi",
             title: "BMI Calculator",
-            description: "Body Mass Index - Measure body fat based on height and weight",
+            description:
+                "Body Mass Index - Measure body fat based on height and weight",
             href: "/calculators/bmi",
         },
         {
             id: "harris-benedict",
             title: "Harris-Benedict Equation",
-            description: "Calculate BMR using the Harris-Benedict equation (revised 1984)",
+            description:
+                "Calculate BMR using the Harris-Benedict equation (revised 1984)",
             href: "/calculators/harris-benedict",
         },
         {
             id: "schofield",
             title: "Schofield (WHO) Equation",
-            description: "Calculate BMR using the WHO-recommended Schofield equation",
+            description:
+                "Calculate BMR using the WHO-recommended Schofield equation",
             href: "/calculators/schofield",
         },
         {
@@ -55,13 +64,15 @@ export default function CalculatorsPage() {
         {
             id: "tdee",
             title: "TDEE Calculator",
-            description: "Total Daily Energy Expenditure - Estimate your daily calorie needs",
+            description:
+                "Total Daily Energy Expenditure - Estimate your daily calorie needs",
             href: "/calculators/tdee",
         },
         {
             id: "ibw",
             title: "IBW Calculator",
-            description: "Ideal Body Weight - Calculate your healthy weight range",
+            description:
+                "Ideal Body Weight - Calculate your healthy weight range",
             href: "/calculators/ibw",
         },
     ]
@@ -78,26 +89,20 @@ export default function CalculatorsPage() {
 
     const handleProceed = () => {
         if (selectedCalculators.length > 0) {
-            const query = new URLSearchParams({ calculators: selectedCalculators.join(",") })
+            const query = new URLSearchParams({
+                calculators: selectedCalculators.join(","),
+            })
             router.push(`/calculators/multi?${query.toString()}`)
         }
     }
 
     return (
         <AppContainer>
-            <Box sx={{ minHeight: "100vh", paddingY: 4 }}>
-                <Box sx={{ marginBottom: 4, textAlign: "center" }}>
-                    <Typography
-                        variant="h3"
-                        sx={{
-                            color: "#00473C",
-                            fontWeight: 700,
-                            marginBottom: 1,
-                            fontSize: { xs: "1.75rem", sm: "2.5rem" },
-                        }}
-                    >
-                        Nutrition Calculators
-                    </Typography>
+            <Box sx={{ minHeight: "100vh" }}>
+                <Box sx={{ marginBottom: 4 }}>
+                    <h1 className="mb-6 text-3xl font-bold">
+                        Nutritional Calculators
+                    </h1>
                     <Typography
                         variant="body1"
                         sx={{
@@ -106,14 +111,13 @@ export default function CalculatorsPage() {
                             marginBottom: 3,
                         }}
                     >
-                        Select one or more calculators to use and generate a combined report
+                        Select one or more calculators to use and generate a
+                        combined report
                     </Typography>
                 </Box>
 
                 <Box
                     sx={{
-                        maxWidth: "1000px",
-                        margin: "0 auto",
                         padding: { xs: 2, sm: 3 },
                     }}
                 >
@@ -142,14 +146,19 @@ export default function CalculatorsPage() {
                                 <Box
                                     key={option.id}
                                     sx={{
-                                        border: selectedCalculators.includes(option.id)
+                                        border: selectedCalculators.includes(
+                                            option.id,
+                                        )
                                             ? "2px solid #00473C"
                                             : "1px solid #e0e0e0",
                                         borderRadius: "8px",
                                         padding: 2,
-                                        backgroundColor: selectedCalculators.includes(option.id)
-                                            ? "#FAF9F6"
-                                            : "#ffffff",
+                                        backgroundColor:
+                                            selectedCalculators.includes(
+                                                option.id,
+                                            )
+                                                ? "#FAF9F6"
+                                                : "#ffffff",
                                         transition: "all 0.2s",
                                         "&:hover": {
                                             borderColor: "#00473C",
@@ -160,8 +169,14 @@ export default function CalculatorsPage() {
                                     <FormControlLabel
                                         control={
                                             <Checkbox
-                                                checked={selectedCalculators.includes(option.id)}
-                                                onChange={() => handleCheckboxChange(option.id)}
+                                                checked={selectedCalculators.includes(
+                                                    option.id,
+                                                )}
+                                                onChange={() =>
+                                                    handleCheckboxChange(
+                                                        option.id,
+                                                    )
+                                                }
                                                 sx={{
                                                     color: "#00473C",
                                                     "&.Mui-checked": {
