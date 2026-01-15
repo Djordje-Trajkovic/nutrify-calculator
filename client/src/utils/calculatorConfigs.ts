@@ -22,6 +22,22 @@ function calculateBMR(gender: string, age: number, weight: number, height: numbe
         : baseCalculation + MSJ_FEMALE_CONSTANT
 }
 
+// Helper function to map disease factor string values to numeric multipliers
+function getDiseaseFactorValue(diseaseFactor: string | number): number {
+    if (typeof diseaseFactor === 'number') return diseaseFactor
+    
+    const diseaseFactorMap: Record<string, number> = {
+        'none': 1.0,
+        'minor_surgery': 1.2,
+        'major_surgery': 1.4,
+        'sepsis': 1.4,
+        'cancer': 1.2,
+        'burns': 1.75,
+    }
+    
+    return diseaseFactorMap[diseaseFactor] || 1.0
+}
+
 export const bmiCalculatorConfig: CalculatorConfig = {
     id: "bmi",
     name: "BMI Calculator",
@@ -152,12 +168,12 @@ export const bmrCalculatorConfig: CalculatorConfig = {
             type: "select",
             required: true,
             options: [
-                { label: "No disease (1.0)", value: "1.0" },
-                { label: "Minor surgery (1.2)", value: "1.2" },
-                { label: "Major surgery (1.3-1.5)", value: "1.4" },
-                { label: "Sepsis (1.3-1.5)", value: "1.4" },
-                { label: "Cancer (1.1-1.3)", value: "1.2" },
-                { label: "Burns (1.5-2.0)", value: "1.75" },
+                { label: "No disease (1.0)", value: "none" },
+                { label: "Minor surgery (1.2)", value: "minor_surgery" },
+                { label: "Major surgery (1.3-1.5)", value: "major_surgery" },
+                { label: "Sepsis (1.3-1.5)", value: "sepsis" },
+                { label: "Cancer (1.1-1.3)", value: "cancer" },
+                { label: "Burns (1.5-2.0)", value: "burns" },
             ],
         },
         {
@@ -177,7 +193,7 @@ export const bmrCalculatorConfig: CalculatorConfig = {
         const weight = Number(inputs.weight)
         const height = Number(inputs.height)
         const activityFactor = Number(inputs.activityFactor)
-        const diseaseFactor = Number(inputs.diseaseFactor)
+        const diseaseFactor = getDiseaseFactorValue(inputs.diseaseFactor)
         const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         const bmr = calculateBMR(gender, age, weight, height)
@@ -392,12 +408,12 @@ export const harrisBenedictCalculatorConfig: CalculatorConfig = {
             type: "select",
             required: true,
             options: [
-                { label: "No disease (1.0)", value: "1.0" },
-                { label: "Minor surgery (1.2)", value: "1.2" },
-                { label: "Major surgery (1.3-1.5)", value: "1.4" },
-                { label: "Sepsis (1.3-1.5)", value: "1.4" },
-                { label: "Cancer (1.1-1.3)", value: "1.2" },
-                { label: "Burns (1.5-2.0)", value: "1.75" },
+                { label: "No disease (1.0)", value: "none" },
+                { label: "Minor surgery (1.2)", value: "minor_surgery" },
+                { label: "Major surgery (1.3-1.5)", value: "major_surgery" },
+                { label: "Sepsis (1.3-1.5)", value: "sepsis" },
+                { label: "Cancer (1.1-1.3)", value: "cancer" },
+                { label: "Burns (1.5-2.0)", value: "burns" },
             ],
         },
         {
@@ -417,7 +433,7 @@ export const harrisBenedictCalculatorConfig: CalculatorConfig = {
         const weight = Number(inputs.weight)
         const height = Number(inputs.height)
         const activityFactor = Number(inputs.activityFactor)
-        const diseaseFactor = Number(inputs.diseaseFactor)
+        const diseaseFactor = getDiseaseFactorValue(inputs.diseaseFactor)
         const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Harris-Benedict Equation (Revised 1984)
@@ -500,12 +516,12 @@ export const schofieldCalculatorConfig: CalculatorConfig = {
             type: "select",
             required: true,
             options: [
-                { label: "No disease (1.0)", value: "1.0" },
-                { label: "Minor surgery (1.2)", value: "1.2" },
-                { label: "Major surgery (1.3-1.5)", value: "1.4" },
-                { label: "Sepsis (1.3-1.5)", value: "1.4" },
-                { label: "Cancer (1.1-1.3)", value: "1.2" },
-                { label: "Burns (1.5-2.0)", value: "1.75" },
+                { label: "No disease (1.0)", value: "none" },
+                { label: "Minor surgery (1.2)", value: "minor_surgery" },
+                { label: "Major surgery (1.3-1.5)", value: "major_surgery" },
+                { label: "Sepsis (1.3-1.5)", value: "sepsis" },
+                { label: "Cancer (1.1-1.3)", value: "cancer" },
+                { label: "Burns (1.5-2.0)", value: "burns" },
             ],
         },
         {
@@ -524,7 +540,7 @@ export const schofieldCalculatorConfig: CalculatorConfig = {
         const age = Number(inputs.age)
         const weight = Number(inputs.weight)
         const activityFactor = Number(inputs.activityFactor)
-        const diseaseFactor = Number(inputs.diseaseFactor)
+        const diseaseFactor = getDiseaseFactorValue(inputs.diseaseFactor)
         const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Schofield Equation (WHO recommendation)
@@ -622,12 +638,12 @@ export const owenCalculatorConfig: CalculatorConfig = {
             type: "select",
             required: true,
             options: [
-                { label: "No disease (1.0)", value: "1.0" },
-                { label: "Minor surgery (1.2)", value: "1.2" },
-                { label: "Major surgery (1.3-1.5)", value: "1.4" },
-                { label: "Sepsis (1.3-1.5)", value: "1.4" },
-                { label: "Cancer (1.1-1.3)", value: "1.2" },
-                { label: "Burns (1.5-2.0)", value: "1.75" },
+                { label: "No disease (1.0)", value: "none" },
+                { label: "Minor surgery (1.2)", value: "minor_surgery" },
+                { label: "Major surgery (1.3-1.5)", value: "major_surgery" },
+                { label: "Sepsis (1.3-1.5)", value: "sepsis" },
+                { label: "Cancer (1.1-1.3)", value: "cancer" },
+                { label: "Burns (1.5-2.0)", value: "burns" },
             ],
         },
         {
@@ -645,7 +661,7 @@ export const owenCalculatorConfig: CalculatorConfig = {
         const gender = inputs.gender as string
         const weight = Number(inputs.weight)
         const activityFactor = Number(inputs.activityFactor)
-        const diseaseFactor = Number(inputs.diseaseFactor)
+        const diseaseFactor = getDiseaseFactorValue(inputs.diseaseFactor)
         const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Owen Equation
@@ -709,12 +725,12 @@ export const cunninghamCalculatorConfig: CalculatorConfig = {
             type: "select",
             required: true,
             options: [
-                { label: "No disease (1.0)", value: "1.0" },
-                { label: "Minor surgery (1.2)", value: "1.2" },
-                { label: "Major surgery (1.3-1.5)", value: "1.4" },
-                { label: "Sepsis (1.3-1.5)", value: "1.4" },
-                { label: "Cancer (1.1-1.3)", value: "1.2" },
-                { label: "Burns (1.5-2.0)", value: "1.75" },
+                { label: "No disease (1.0)", value: "none" },
+                { label: "Minor surgery (1.2)", value: "minor_surgery" },
+                { label: "Major surgery (1.3-1.5)", value: "major_surgery" },
+                { label: "Sepsis (1.3-1.5)", value: "sepsis" },
+                { label: "Cancer (1.1-1.3)", value: "cancer" },
+                { label: "Burns (1.5-2.0)", value: "burns" },
             ],
         },
         {
@@ -731,7 +747,7 @@ export const cunninghamCalculatorConfig: CalculatorConfig = {
     calculate: (inputs) => {
         const leanBodyMass = Number(inputs.leanBodyMass)
         const activityFactor = Number(inputs.activityFactor)
-        const diseaseFactor = Number(inputs.diseaseFactor)
+        const diseaseFactor = getDiseaseFactorValue(inputs.diseaseFactor)
         const severeRenalFailure = inputs.severeRenalFailure === "yes"
         
         // Cunningham Equation
