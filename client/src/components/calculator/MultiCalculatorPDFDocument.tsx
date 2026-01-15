@@ -164,6 +164,23 @@ export default function MultiCalculatorPDFDocument({
         return String(inputs[field.id])
     }
 
+    // Get all unique input fields from all selected calculators
+    const allFields = new Map<string, { field: CalculatorField; value: string | number }>()
+    
+    selectedCalculators.forEach((id) => {
+        const data = calculatorData[id]
+        if (data) {
+            data.config.fields.forEach((field) => {
+                if (!allFields.has(field.id)) {
+                    allFields.set(field.id, {
+                        field,
+                        value: data.inputs[field.id],
+                    })
+                }
+            })
+        }
+    })
+
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -178,7 +195,23 @@ export default function MultiCalculatorPDFDocument({
                     </Text>
                 </View>
 
-                {/* Summary Section */}
+                {/* Input Values Section */}
+                <View style={styles.calculatorSection}>
+                    <Text style={styles.calculatorTitle}>Input Values</Text>
+                    {Array.from(allFields.values()).map(({ field, value }) => (
+                        <View key={field.id} style={styles.inputContainer}>
+                            <Text style={styles.inputLabel}>
+                                {field.label}
+                            </Text>
+                            <Text style={styles.inputValue}>
+                                {getFieldLabel(field, { [field.id]: value })}
+                                {field.unit ? ` ${field.unit}` : ""}
+                            </Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Results Summary Section */}
                 <View style={styles.summarySection}>
                     <Text style={styles.summaryTitle}>Results Summary</Text>
                     {selectedCalculators.map((id) => {
@@ -200,53 +233,6 @@ export default function MultiCalculatorPDFDocument({
                         )
                     })}
                 </View>
-
-                {/* Detailed Results for Each Calculator */}
-                {selectedCalculators.map((id) => {
-                    const data = calculatorData[id]
-                    if (!data?.result) return null
-
-                    return (
-                        <View key={id} style={styles.calculatorSection}>
-                            <Text style={styles.calculatorTitle}>
-                                {data.config.name}
-                            </Text>
-
-                            {/* Input Values */}
-                            <Text style={styles.sectionTitle}>Input Values</Text>
-                            {data.config.fields.map((field) => (
-                                <View key={field.id} style={styles.inputContainer}>
-                                    <Text style={styles.inputLabel}>
-                                        {field.label}
-                                    </Text>
-                                    <Text style={styles.inputValue}>
-                                        {getFieldLabel(field, data.inputs)}
-                                        {field.unit ? ` ${field.unit}` : ""}
-                                    </Text>
-                                </View>
-                            ))}
-
-                            {/* Result */}
-                            <View style={styles.resultContainer}>
-                                <Text style={styles.resultValue}>
-                                    {data.result.value} {data.result.unit}
-                                </Text>
-
-                                {data.result.category && (
-                                    <View style={styles.categoryContainer}>
-                                        <Text style={styles.categoryText}>
-                                            {data.result.category}
-                                        </Text>
-                                    </View>
-                                )}
-
-                                <Text style={styles.interpretationText}>
-                                    {data.result.interpretation}
-                                </Text>
-                            </View>
-                        </View>
-                    )
-                })}
 
                 {/* Footer */}
                 <View style={styles.footer}>
