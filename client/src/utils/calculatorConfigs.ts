@@ -1,5 +1,27 @@
 import { CalculatorConfig } from "@/utils/types"
 
+// Mifflin-St Jeor Equation Constants
+const MSJ_WEIGHT_COEFFICIENT = 10
+const MSJ_HEIGHT_COEFFICIENT = 6.25
+const MSJ_AGE_COEFFICIENT = 5
+const MSJ_MALE_CONSTANT = 5
+const MSJ_FEMALE_CONSTANT = -161
+
+// Devine Formula Constants
+const DEVINE_MALE_BASE = 50
+const DEVINE_FEMALE_BASE = 45.5
+const DEVINE_HEIGHT_COEFFICIENT = 2.3
+const DEVINE_HEIGHT_OFFSET = 60
+const CM_TO_INCHES = 2.54
+
+// Helper function to calculate BMR using Mifflin-St Jeor Equation
+function calculateBMR(gender: string, age: number, weight: number, height: number): number {
+    const baseCalculation = MSJ_WEIGHT_COEFFICIENT * weight + MSJ_HEIGHT_COEFFICIENT * height - MSJ_AGE_COEFFICIENT * age
+    return gender === "male" 
+        ? baseCalculation + MSJ_MALE_CONSTANT 
+        : baseCalculation + MSJ_FEMALE_CONSTANT
+}
+
 export const bmiCalculatorConfig: CalculatorConfig = {
     id: "bmi",
     name: "BMI Calculator",
@@ -118,13 +140,7 @@ export const bmrCalculatorConfig: CalculatorConfig = {
         const weight = Number(inputs.weight)
         const height = Number(inputs.height)
         
-        // Mifflin-St Jeor Equation
-        let bmr: number
-        if (gender === "male") {
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5
-        } else {
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161
-        }
+        const bmr = calculateBMR(gender, age, weight, height)
         
         const interpretation = `Your Basal Metabolic Rate (BMR) is ${Math.round(bmr)} calories per day. This is the number of calories your body needs to maintain basic physiological functions at rest. To determine your total daily calorie needs, multiply your BMR by your activity level factor.`
         
@@ -200,13 +216,7 @@ export const tdeeCalculatorConfig: CalculatorConfig = {
         const height = Number(inputs.height)
         const activityMultiplier = Number(inputs.activity)
         
-        // Calculate BMR using Mifflin-St Jeor Equation
-        let bmr: number
-        if (gender === "male") {
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5
-        } else {
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161
-        }
+        const bmr = calculateBMR(gender, age, weight, height)
         
         // Calculate TDEE
         const tdee = bmr * activityMultiplier
@@ -252,12 +262,10 @@ export const ibwCalculatorConfig: CalculatorConfig = {
         const heightCm = Number(inputs.height)
         
         // Devine Formula
-        let ibw: number
-        if (gender === "male") {
-            ibw = 50 + 2.3 * ((heightCm / 2.54) - 60)
-        } else {
-            ibw = 45.5 + 2.3 * ((heightCm / 2.54) - 60)
-        }
+        const heightInches = (heightCm / CM_TO_INCHES) - DEVINE_HEIGHT_OFFSET
+        const ibw = gender === "male"
+            ? DEVINE_MALE_BASE + DEVINE_HEIGHT_COEFFICIENT * heightInches
+            : DEVINE_FEMALE_BASE + DEVINE_HEIGHT_COEFFICIENT * heightInches
         
         // Healthy weight range (IBW ± 10%)
         const lowerRange = Math.round(ibw * 0.9)
