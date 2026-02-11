@@ -371,7 +371,7 @@ export default function PDFMealTable({ meals, fields, planCalories, showMealKcal
                             <View
                                 style={[
                                     styles.cell,
-                                    { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH, fontSize: 6 },
+                                    { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH, fontSize: 7 },
                                 ]}
                             >
                                 <Text>{additionsLabel}</Text>
