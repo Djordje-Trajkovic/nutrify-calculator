@@ -1,5 +1,5 @@
 "use client"
-import { CustomAdditionEntry, Ingredient, Meal, NutritionalFields, Recipe } from "@/utils/types"
+import { CustomAdditionEntry, Ingredient, Meal, Recipe } from "@/utils/types"
 import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
@@ -255,11 +255,10 @@ const CalculateMeal: React.FC = () => {
     ) => {
         setMeals((prev) => {
             const newMeals = [...prev]
-            newMeals[mealIndex] = {
+            newMeals[mealIndex] = calculateMealNutrition({
                 ...newMeals[mealIndex],
                 CustomAdditions: additions,
-            }
-            newMeals[mealIndex] = calculateMealNutrition(newMeals[mealIndex])
+            })
             return newMeals
         })
     }
@@ -490,9 +489,9 @@ const CalculateMeal: React.FC = () => {
         // Apply custom additions directly (no factor calculation)
         if (meal.CustomAdditions) {
             for (const addition of meal.CustomAdditions) {
-                const key = addition.field as keyof NutritionalFields
-                ;(nutritionTotals as Record<string, unknown>)[key] =
-                    ((nutritionTotals[key] as number) ?? 0) + addition.value
+                const key = addition.field
+                nutritionTotals[key] =
+                    ((nutritionTotals[key] ?? 0) as number) + addition.value
             }
         }
 
@@ -1171,7 +1170,7 @@ const CalculateMeal: React.FC = () => {
                                                                     )}
                                                                 </span>
                                                                 <span className="font-medium text-DarkGreen">
-                                                                    +
+                                                                    {entry.value >= 0 ? "+" : ""}
                                                                     {entry.value}
                                                                 </span>
                                                             </div>

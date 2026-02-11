@@ -217,7 +217,7 @@ const CustomAdditionModal: React.FC<Props> = ({
                                     {formatFieldName(entry.field)}
                                 </span>
                                 <span className="w-24 text-right text-sm font-medium">
-                                    +{entry.value}
+                                    {entry.value >= 0 ? "+" : ""}{entry.value}
                                 </span>
                                 <Button
                                     className="min-w-0! p-1! ml-2!"
