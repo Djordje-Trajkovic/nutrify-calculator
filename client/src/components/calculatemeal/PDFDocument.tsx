@@ -11,6 +11,7 @@ import PDFMealTable from "./PDFMealTable"
 type Props = {
     meals: Meal[]
     mealPlanName: string
+    planCalories: number
 }
 
 const styles = StyleSheet.create({
@@ -71,7 +72,7 @@ const fieldGroups: {
 }[] = [
     {
         title: "Basic Information",
-        fields: ["Kcal", "Amount", "Volume_per_Unit", "Water", "Ashes"],
+        fields: ["Amount", "Kcal", "Water", "Volume_per_Unit", "Ashes"],
     },
     {
         title: "Proteins",
@@ -203,7 +204,7 @@ const fieldGroups: {
     },
 ]
 
-export default function PDFDocument({ meals, mealPlanName }: Props) {
+export default function PDFDocument({ meals, mealPlanName, planCalories }: Props) {
     const generationDate = new Date().toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -229,7 +230,12 @@ export default function PDFDocument({ meals, mealPlanName }: Props) {
                 {fieldGroups.map((group) => (
                     <View key={group.title} style={styles.tableSection} wrap={false}>
                         <Text style={styles.sectionTitle}>{group.title}</Text>
-                        <PDFMealTable meals={meals} fields={group.fields} />
+                        <PDFMealTable
+                            meals={meals}
+                            fields={group.fields}
+                            planCalories={planCalories}
+                            showMealKcalPercent={group.title === "Basic Information"}
+                        />
                     </View>
                 ))}
 

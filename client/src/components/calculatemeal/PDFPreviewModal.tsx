@@ -8,6 +8,7 @@ type Props = {
     onClose: () => void
     meals: Meal[]
     mealPlanName: string
+    planCalories: number
 }
 
 export default function PDFPreviewModal({
@@ -15,6 +16,7 @@ export default function PDFPreviewModal({
     onClose,
     meals,
     mealPlanName,
+    planCalories,
 }: Props) {
     return (
         <UniversalPDFPreviewModal
@@ -23,7 +25,7 @@ export default function PDFPreviewModal({
             title={mealPlanName || "Meal Plan"}
             fileName={`${mealPlanName || "meal-plan"}.pdf`}
             pdfDocument={
-                <PDFDocument meals={meals} mealPlanName={mealPlanName} />
+                <PDFDocument meals={meals} mealPlanName={mealPlanName} planCalories={planCalories} />
             }
         />
     )

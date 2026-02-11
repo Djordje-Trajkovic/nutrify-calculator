@@ -508,6 +508,7 @@ const CalculateMeal: React.FC = () => {
                 onClose={() => setViewReport(false)}
                 meals={meals}
                 mealPlanName={mealPlanName}
+                planCalories={planCalories}
             />
             {customModalOpen !== null && (
                 <CustomAdditionModal
@@ -1329,6 +1330,53 @@ const CalculateMeal: React.FC = () => {
                                                 </div>
                                             ),
                                         )}
+                                        {/* Custom Additions row in the table */}
+                                        {meal.CustomAdditions &&
+                                            meal.CustomAdditions.length > 0 && (
+                                                <div className="flex h-full w-full">
+                                                    <div className="text-DarkGreen flex h-full w-full max-w-1/3 items-center border border-t-0 border-r-0 border-slate-300 bg-yellow-50">
+                                                        <span className="text-DarkGreen font-Poppins w-full max-w-[120px] px-5 italic text-sm">
+                                                            Custom
+                                                        </span>
+                                                        <div className="flex h-full w-full flex-col">
+                                                            <div className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-yellow-50 px-4 text-xs">
+                                                                {meal.CustomAdditions.map(
+                                                                    (entry, i) => (
+                                                                        <span key={i} className="mr-2">
+                                                                            {entry.field.replace(/_/g, " ")}:{" "}
+                                                                            {entry.value >= 0 ? "+" : ""}{entry.value}
+                                                                        </span>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex w-full flex-col items-center border border-t-0 border-r-0 border-l-0 border-slate-300">
+                                                        <div className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-yellow-50 px-4">
+                                                            <span className="w-full text-center">-</span>
+                                                            <span className="w-full text-center">-</span>
+                                                            <span className="w-full text-center">
+                                                                {(() => {
+                                                                    const kcalAddition = meal.CustomAdditions?.find(a => a.field === "Kcal")
+                                                                    if (kcalAddition && planCalories > 0) {
+                                                                        return ((kcalAddition.value / planCalories) * 100).toFixed(2) + "%"
+                                                                    }
+                                                                    return "-"
+                                                                })()}
+                                                            </span>
+                                                            <span className="w-full text-center">
+                                                                {(() => {
+                                                                    const kcalAddition = meal.CustomAdditions?.find(a => a.field === "Kcal")
+                                                                    if (kcalAddition) {
+                                                                        return (kcalAddition.value >= 0 ? "+" : "") + kcalAddition.value
+                                                                    }
+                                                                    return "-"
+                                                                })()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                     </div>
                                 </div>
                             </div>
