@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "meal_plans",
+  "info": {
+    "singularName": "meal-plan",
+    "pluralName": "meal-plans",
+    "displayName": "Meal Plan",
+    "description": "A user-created meal plan with meals, recipes, and custom ingredients"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string",
+      "required": true
+    },
+    "TotalCalories": {
+      "type": "integer"
+    },
+    "Meals": {
+      "type": "json",
+      "required": true
+    }
+  }
+}

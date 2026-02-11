@@ -4,8 +4,9 @@ import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple, Plus } from "@phosphor-icons/react"
-import { searchRecipesByName } from "@/utils/api"
+import { searchRecipesByName, saveMealPlan } from "@/utils/api"
 import PDFPreviewModal from "./PDFPreviewModal"
+import { toast } from "react-toastify"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -242,6 +243,49 @@ const CalculateMeal: React.FC = () => {
             Kcal: 0,
         })
         setMeals(newMeals)
+    }
+    const handleAddCustomItem = (mealIndex: number) => {
+        setMeals((prev) => {
+            const newMeals = [...prev]
+            const targetMeal = { ...newMeals[mealIndex] }
+            const newRecipes = [...(targetMeal.Recipes ?? [])]
+            const customRecipe: Recipe = {
+                Name: "Custom Item",
+                Code: "CUSTOM",
+                Ingredients: [
+                    {
+                        Name: "Custom Ingredient",
+                        Code: "CUSTOM",
+                        Amount: 100,
+                        Kcal: 0,
+                        Protein_total: 0,
+                        Fat_total: 0,
+                        Carbohydrates_total: 0,
+                    },
+                ],
+            }
+            newRecipes.push(customRecipe)
+            targetMeal.Recipes = newRecipes
+            newMeals[mealIndex] = targetMeal
+            return newMeals
+        })
+    }
+    const handleSaveMealPlan = async () => {
+        if (!mealPlanName.trim()) {
+            toast.error("Please enter a meal plan name")
+            return
+        }
+        if (!token) {
+            toast.error("You must be logged in to save a meal plan")
+            return
+        }
+        try {
+            await saveMealPlan(mealPlanName, planCalories, meals, token)
+            toast.success("Meal plan saved successfully!")
+        } catch (error) {
+            console.error("Error saving meal plan:", error)
+            toast.error("Failed to save meal plan. Please try again.")
+        }
     }
     const handleRemoveIngredient = (
         mealIndex: number,
@@ -506,9 +550,7 @@ const CalculateMeal: React.FC = () => {
                         <Button
                             variant="contained"
                             className="bg-LightGreen! hover:bg-LightGreen/80! w-full"
-                            onClick={() => {
-                                console.log("Save meal plan")
-                            }}
+                            onClick={handleSaveMealPlan}
                         >
                             Save Meal Plan
                         </Button>
@@ -672,6 +714,17 @@ const CalculateMeal: React.FC = () => {
                                                             }
                                                         >
                                                             Add Recipe
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            className="bg-Cream! hover:bg-Cream/80! text-DarkGreen! normal-case!"
+                                                            onClick={() =>
+                                                                handleAddCustomItem(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        >
+                                                            Add Custom Item
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -864,6 +917,100 @@ const CalculateMeal: React.FC = () => {
                                                                 }
                                                                 className="flex gap-1"
                                                             >
+                                                                {recipe.Code === "CUSTOM" ? (
+                                                                    <div className="flex w-full flex-col gap-2">
+                                                                        <TextField
+                                                                            label="Custom Item Name"
+                                                                            value={ingredient.Name || ""}
+                                                                            onChange={(e) => {
+                                                                                setMeals((prev) => {
+                                                                                    const newMeals = [...prev]
+                                                                                    newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Name = e.target.value
+                                                                                    return newMeals
+                                                                                })
+                                                                            }}
+                                                                            fullWidth
+                                                                        />
+                                                                        <div className="flex gap-2">
+                                                                            <TextField
+                                                                                label="Kcal"
+                                                                                type="number"
+                                                                                value={ingredient.Kcal ?? 0}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseFloat(e.target.value) || 0
+                                                                                    setMeals((prev) => {
+                                                                                        const newMeals = [...prev]
+                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Kcal = val
+                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
+                                                                                        return newMeals
+                                                                                    })
+                                                                                }}
+                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
+                                                                            />
+                                                                            <TextField
+                                                                                label="Protein (g)"
+                                                                                type="number"
+                                                                                value={ingredient.Protein_total ?? 0}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseFloat(e.target.value) || 0
+                                                                                    setMeals((prev) => {
+                                                                                        const newMeals = [...prev]
+                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Protein_total = val
+                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
+                                                                                        return newMeals
+                                                                                    })
+                                                                                }}
+                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
+                                                                            />
+                                                                            <TextField
+                                                                                label="Fat (g)"
+                                                                                type="number"
+                                                                                value={ingredient.Fat_total ?? 0}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseFloat(e.target.value) || 0
+                                                                                    setMeals((prev) => {
+                                                                                        const newMeals = [...prev]
+                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Fat_total = val
+                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
+                                                                                        return newMeals
+                                                                                    })
+                                                                                }}
+                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
+                                                                            />
+                                                                            <TextField
+                                                                                label="Carbs (g)"
+                                                                                type="number"
+                                                                                value={ingredient.Carbohydrates_total ?? 0}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseFloat(e.target.value) || 0
+                                                                                    setMeals((prev) => {
+                                                                                        const newMeals = [...prev]
+                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Carbohydrates_total = val
+                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
+                                                                                        return newMeals
+                                                                                    })
+                                                                                }}
+                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
+                                                                            />
+                                                                            <TextField
+                                                                                label="Amount"
+                                                                                type="number"
+                                                                                value={ingredient.Amount ?? 100}
+                                                                                onChange={(e) => {
+                                                                                    const amount = parseInt(e.target.value) || 0
+                                                                                    setMeals((prev) => {
+                                                                                        const newMeals = [...prev]
+                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Amount = amount
+                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
+                                                                                        return newMeals
+                                                                                    })
+                                                                                }}
+                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                <>
                                                                 <div className="flex w-full flex-col">
                                                                     <Stack
                                                                         spacing={
@@ -1020,6 +1167,8 @@ const CalculateMeal: React.FC = () => {
                                                                         }}
                                                                     />
                                                                 </div>
+                                                                </>
+                                                                )}
                                                                 {recipe
                                                                     .Ingredients
                                                                     .length >

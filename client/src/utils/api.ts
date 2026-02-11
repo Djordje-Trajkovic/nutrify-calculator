@@ -11,6 +11,7 @@ import {
     CategoryMealCourse,
     Dietetic,
     Ingredient,
+    Meal,
     Recipe,
     MedicalFoodRecipe,
     MedicalFoodMenu,
@@ -30,6 +31,7 @@ const INGREDIENTS_ENDPOINT = `${BASE_URL}/ingredients`
 const RECIPE_ENDPOINT = `${BASE_URL}/recipes`
 const MFR_ENDPOINT = `${BASE_URL}/medical-food-recipes`
 const MFM_ENDPOINT = `${BASE_URL}/medical-food-menus`
+const MEAL_PLAN_ENDPOINT = `${BASE_URL}/meal-plans`
 
 // Headers
 const getHeaders = (token?: string | null) => ({
@@ -1038,4 +1040,30 @@ export async function getAllMedicalFoodMenus(): Promise<MedicalFoodMenu[]> {
         updatedAt: data.attributes.updatedAt,
         publishedAt: data.attributes.publishedAt,
     }))
+}
+
+// MEAL PLAN ENDPOINTS
+
+export async function saveMealPlan(
+    name: string,
+    totalCalories: number,
+    meals: Meal[],
+    token: string,
+): Promise<{ data: any; meta?: any }> {
+    const res = await fetch(MEAL_PLAN_ENDPOINT, {
+        method: "POST",
+        headers: getHeaders(token),
+        body: JSON.stringify({
+            data: {
+                Name: name,
+                TotalCalories: totalCalories,
+                Meals: meals,
+            },
+        }),
+    })
+    const json = await res.json()
+    return {
+        data: json.data,
+        meta: json.meta,
+    }
 }
