@@ -1061,6 +1061,9 @@ export async function saveMealPlan(
             },
         }),
     })
+    if (!res.ok) {
+        throw new Error(`Failed to save meal plan: ${res.status} ${res.statusText}`)
+    }
     const json = await res.json()
     return {
         data: json.data,

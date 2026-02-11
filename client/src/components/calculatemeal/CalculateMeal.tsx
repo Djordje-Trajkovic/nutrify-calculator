@@ -287,6 +287,21 @@ const CalculateMeal: React.FC = () => {
             toast.error("Failed to save meal plan. Please try again.")
         }
     }
+    const updateCustomIngredient = (
+        mealIndex: number,
+        recIndex: number,
+        ingIndex: number,
+        field: keyof Ingredient,
+        value: string | number,
+    ) => {
+        setMeals((prev) => {
+            const newMeals = [...prev]
+            const ingredient = newMeals[mealIndex].Recipes[recIndex].Ingredients[ingIndex]
+            ;(ingredient as Record<string, unknown>)[field] = value
+            newMeals[mealIndex] = calculateMealNutrition(newMeals[mealIndex])
+            return newMeals
+        })
+    }
     const handleRemoveIngredient = (
         mealIndex: number,
         recIndex: number,
@@ -922,13 +937,7 @@ const CalculateMeal: React.FC = () => {
                                                                         <TextField
                                                                             label="Custom Item Name"
                                                                             value={ingredient.Name || ""}
-                                                                            onChange={(e) => {
-                                                                                setMeals((prev) => {
-                                                                                    const newMeals = [...prev]
-                                                                                    newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Name = e.target.value
-                                                                                    return newMeals
-                                                                                })
-                                                                            }}
+                                                                            onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Name", e.target.value)}
                                                                             fullWidth
                                                                         />
                                                                         <div className="flex gap-2">
@@ -936,75 +945,35 @@ const CalculateMeal: React.FC = () => {
                                                                                 label="Kcal"
                                                                                 type="number"
                                                                                 value={ingredient.Kcal ?? 0}
-                                                                                onChange={(e) => {
-                                                                                    const val = parseFloat(e.target.value) || 0
-                                                                                    setMeals((prev) => {
-                                                                                        const newMeals = [...prev]
-                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Kcal = val
-                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
-                                                                                        return newMeals
-                                                                                    })
-                                                                                }}
+                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Kcal", parseFloat(e.target.value) || 0)}
                                                                                 slotProps={{ input: { onFocus: (e) => e.target.select() } }}
                                                                             />
                                                                             <TextField
                                                                                 label="Protein (g)"
                                                                                 type="number"
                                                                                 value={ingredient.Protein_total ?? 0}
-                                                                                onChange={(e) => {
-                                                                                    const val = parseFloat(e.target.value) || 0
-                                                                                    setMeals((prev) => {
-                                                                                        const newMeals = [...prev]
-                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Protein_total = val
-                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
-                                                                                        return newMeals
-                                                                                    })
-                                                                                }}
+                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Protein_total", parseFloat(e.target.value) || 0)}
                                                                                 slotProps={{ input: { onFocus: (e) => e.target.select() } }}
                                                                             />
                                                                             <TextField
                                                                                 label="Fat (g)"
                                                                                 type="number"
                                                                                 value={ingredient.Fat_total ?? 0}
-                                                                                onChange={(e) => {
-                                                                                    const val = parseFloat(e.target.value) || 0
-                                                                                    setMeals((prev) => {
-                                                                                        const newMeals = [...prev]
-                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Fat_total = val
-                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
-                                                                                        return newMeals
-                                                                                    })
-                                                                                }}
+                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Fat_total", parseFloat(e.target.value) || 0)}
                                                                                 slotProps={{ input: { onFocus: (e) => e.target.select() } }}
                                                                             />
                                                                             <TextField
                                                                                 label="Carbs (g)"
                                                                                 type="number"
                                                                                 value={ingredient.Carbohydrates_total ?? 0}
-                                                                                onChange={(e) => {
-                                                                                    const val = parseFloat(e.target.value) || 0
-                                                                                    setMeals((prev) => {
-                                                                                        const newMeals = [...prev]
-                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Carbohydrates_total = val
-                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
-                                                                                        return newMeals
-                                                                                    })
-                                                                                }}
+                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Carbohydrates_total", parseFloat(e.target.value) || 0)}
                                                                                 slotProps={{ input: { onFocus: (e) => e.target.select() } }}
                                                                             />
                                                                             <TextField
                                                                                 label="Amount"
                                                                                 type="number"
                                                                                 value={ingredient.Amount ?? 100}
-                                                                                onChange={(e) => {
-                                                                                    const amount = parseInt(e.target.value) || 0
-                                                                                    setMeals((prev) => {
-                                                                                        const newMeals = [...prev]
-                                                                                        newMeals[index].Recipes[recIndex].Ingredients[ingIndex].Amount = amount
-                                                                                        newMeals[index] = calculateMealNutrition(newMeals[index])
-                                                                                        return newMeals
-                                                                                    })
-                                                                                }}
+                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Amount", parseInt(e.target.value) || 0)}
                                                                                 slotProps={{ input: { onFocus: (e) => e.target.select() } }}
                                                                             />
                                                                         </div>
