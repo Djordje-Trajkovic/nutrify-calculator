@@ -1,11 +1,12 @@
 "use client"
-import { Ingredient, Meal, Recipe } from "@/utils/types"
+import { CustomAdditionEntry, Ingredient, Meal, NutritionalFields, Recipe } from "@/utils/types"
 import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple, Plus } from "@phosphor-icons/react"
 import { searchRecipesByName, saveMealPlan } from "@/utils/api"
 import PDFPreviewModal from "./PDFPreviewModal"
+import CustomAdditionModal from "./CustomAdditionModal"
 import { toast } from "react-toastify"
 
 const CalculateMeal: React.FC = () => {
@@ -99,6 +100,7 @@ const CalculateMeal: React.FC = () => {
     const [mealPlanName, setMealPlanName] = useState("")
     const [planCalories, setPlanCalories] = useState(1800)
     const [viewReport, setViewReport] = useState(false)
+    const [customModalOpen, setCustomModalOpen] = useState<number | null>(null)
 
     const handleIngredientSearch = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -245,28 +247,19 @@ const CalculateMeal: React.FC = () => {
         setMeals(newMeals)
     }
     const handleAddCustomItem = (mealIndex: number) => {
+        setCustomModalOpen(mealIndex)
+    }
+    const handleSaveCustomAdditions = (
+        mealIndex: number,
+        additions: CustomAdditionEntry[],
+    ) => {
         setMeals((prev) => {
             const newMeals = [...prev]
-            const targetMeal = { ...newMeals[mealIndex] }
-            const newRecipes = [...(targetMeal.Recipes ?? [])]
-            const customRecipe: Recipe = {
-                Name: "Custom Item",
-                Code: "CUSTOM",
-                Ingredients: [
-                    {
-                        Name: "Custom Ingredient",
-                        Code: "CUSTOM",
-                        Amount: 100,
-                        Kcal: 0,
-                        Protein_total: 0,
-                        Fat_total: 0,
-                        Carbohydrates_total: 0,
-                    },
-                ],
+            newMeals[mealIndex] = {
+                ...newMeals[mealIndex],
+                CustomAdditions: additions,
             }
-            newRecipes.push(customRecipe)
-            targetMeal.Recipes = newRecipes
-            newMeals[mealIndex] = targetMeal
+            newMeals[mealIndex] = calculateMealNutrition(newMeals[mealIndex])
             return newMeals
         })
     }
@@ -286,21 +279,6 @@ const CalculateMeal: React.FC = () => {
             console.error("Error saving meal plan:", error)
             toast.error("Failed to save meal plan. Please try again.")
         }
-    }
-    const updateCustomIngredient = (
-        mealIndex: number,
-        recIndex: number,
-        ingIndex: number,
-        field: keyof Ingredient,
-        value: string | number,
-    ) => {
-        setMeals((prev) => {
-            const newMeals = [...prev]
-            const ingredient = newMeals[mealIndex].Recipes[recIndex].Ingredients[ingIndex]
-            ;(ingredient as Record<string, unknown>)[field] = value
-            newMeals[mealIndex] = calculateMealNutrition(newMeals[mealIndex])
-            return newMeals
-        })
     }
     const handleRemoveIngredient = (
         mealIndex: number,
@@ -508,6 +486,16 @@ const CalculateMeal: React.FC = () => {
             nutritionTotals.Glycemic_index =
                 weightedGlycemicIndex / totalCarbsForGlycemicIndex
         }
+
+        // Apply custom additions directly (no factor calculation)
+        if (meal.CustomAdditions) {
+            for (const addition of meal.CustomAdditions) {
+                const key = addition.field as keyof NutritionalFields
+                ;(nutritionTotals as Record<string, unknown>)[key] =
+                    ((nutritionTotals[key] as number) ?? 0) + addition.value
+            }
+        }
+
         return {
             ...meal,
             ...nutritionTotals,
@@ -522,6 +510,19 @@ const CalculateMeal: React.FC = () => {
                 meals={meals}
                 mealPlanName={mealPlanName}
             />
+            {customModalOpen !== null && (
+                <CustomAdditionModal
+                    open={true}
+                    onClose={() => setCustomModalOpen(null)}
+                    existingAdditions={
+                        meals[customModalOpen]?.CustomAdditions ?? []
+                    }
+                    onSave={(additions) => {
+                        handleSaveCustomAdditions(customModalOpen, additions)
+                        setCustomModalOpen(null)
+                    }}
+                />
+            )}
             <div className="w-full pb-10">
                 <div className="flex justify-between pb-10">
                     <h1 className="text-DarkGreen font-Poppins text-4xl font-semibold">
@@ -932,54 +933,6 @@ const CalculateMeal: React.FC = () => {
                                                                 }
                                                                 className="flex gap-1"
                                                             >
-                                                                {recipe.Code === "CUSTOM" ? (
-                                                                    <div className="flex w-full flex-col gap-2">
-                                                                        <TextField
-                                                                            label="Custom Item Name"
-                                                                            value={ingredient.Name || ""}
-                                                                            onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Name", e.target.value)}
-                                                                            fullWidth
-                                                                        />
-                                                                        <div className="flex gap-2">
-                                                                            <TextField
-                                                                                label="Kcal"
-                                                                                type="number"
-                                                                                value={ingredient.Kcal ?? 0}
-                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Kcal", parseFloat(e.target.value) || 0)}
-                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
-                                                                            />
-                                                                            <TextField
-                                                                                label="Protein (g)"
-                                                                                type="number"
-                                                                                value={ingredient.Protein_total ?? 0}
-                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Protein_total", parseFloat(e.target.value) || 0)}
-                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
-                                                                            />
-                                                                            <TextField
-                                                                                label="Fat (g)"
-                                                                                type="number"
-                                                                                value={ingredient.Fat_total ?? 0}
-                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Fat_total", parseFloat(e.target.value) || 0)}
-                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
-                                                                            />
-                                                                            <TextField
-                                                                                label="Carbs (g)"
-                                                                                type="number"
-                                                                                value={ingredient.Carbohydrates_total ?? 0}
-                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Carbohydrates_total", parseFloat(e.target.value) || 0)}
-                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
-                                                                            />
-                                                                            <TextField
-                                                                                label="Amount"
-                                                                                type="number"
-                                                                                value={ingredient.Amount ?? 100}
-                                                                                onChange={(e) => updateCustomIngredient(index, recIndex, ingIndex, "Amount", parseInt(e.target.value) || 0)}
-                                                                                slotProps={{ input: { onFocus: (e) => e.target.select() } }}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                <>
                                                                 <div className="flex w-full flex-col">
                                                                     <Stack
                                                                         spacing={
@@ -1136,8 +1089,6 @@ const CalculateMeal: React.FC = () => {
                                                                         }}
                                                                     />
                                                                 </div>
-                                                                </>
-                                                                )}
                                                                 {recipe
                                                                     .Ingredients
                                                                     .length >
@@ -1187,6 +1138,47 @@ const CalculateMeal: React.FC = () => {
                                                 </div>
                                             ),
                                         )}
+                                        {meal.CustomAdditions &&
+                                            meal.CustomAdditions.length >
+                                                0 && (
+                                                <div className="mt-2 rounded-lg border border-slate-200 p-3">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-DarkGreen font-Poppins text-sm font-semibold">
+                                                            Custom Additions
+                                                        </span>
+                                                        <Button
+                                                            size="small"
+                                                            className="text-DarkGreen! normal-case! text-xs!"
+                                                            onClick={() =>
+                                                                setCustomModalOpen(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    </div>
+                                                    {meal.CustomAdditions.map(
+                                                        (entry, addIdx) => (
+                                                            <div
+                                                                key={addIdx}
+                                                                className="flex items-center justify-between py-1 text-sm"
+                                                            >
+                                                                <span className="text-gray-600">
+                                                                    {entry.field.replace(
+                                                                        /_/g,
+                                                                        " ",
+                                                                    )}
+                                                                </span>
+                                                                <span className="font-medium text-DarkGreen">
+                                                                    +
+                                                                    {entry.value}
+                                                                </span>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
                                         <h5 className="text-DarkGreen font-Poppins flex w-full justify-end text-xl font-medium">
                                             Total Meal Calories:{" "}
                                             {meal.Kcal?.toFixed(2)}
