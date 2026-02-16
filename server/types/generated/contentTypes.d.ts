@@ -732,6 +732,37 @@ export interface ApiIngredientIngredient extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiMealPlanMealPlan extends Struct.CollectionTypeSchema {
+  collectionName: 'meal_plans';
+  info: {
+    description: 'A user-created meal plan with meals, recipes, and custom ingredients';
+    displayName: 'Meal Plan';
+    pluralName: 'meal-plans';
+    singularName: 'meal-plan';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::meal-plan.meal-plan'
+    > &
+      Schema.Attribute.Private;
+    Meals: Schema.Attribute.JSON & Schema.Attribute.Required;
+    Name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    TotalCalories: Schema.Attribute.Integer;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiMedicalFoodMenuMedicalFoodMenu
   extends Struct.CollectionTypeSchema {
   collectionName: 'medical_food_menus';
@@ -1457,6 +1488,7 @@ declare module '@strapi/strapi' {
       'api::category-meal-course.category-meal-course': ApiCategoryMealCourseCategoryMealCourse;
       'api::dietetic.dietetic': ApiDieteticDietetic;
       'api::ingredient.ingredient': ApiIngredientIngredient;
+      'api::meal-plan.meal-plan': ApiMealPlanMealPlan;
       'api::medical-food-menu.medical-food-menu': ApiMedicalFoodMenuMedicalFoodMenu;
       'api::medical-food-recipe.medical-food-recipe': ApiMedicalFoodRecipeMedicalFoodRecipe;
       'api::recipe-test.recipe-test': ApiRecipeTestRecipeTest;
