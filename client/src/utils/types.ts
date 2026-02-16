@@ -104,10 +104,16 @@ export type NutritionalFields = {
     Water?: number
 }
 
+export type CustomAdditionEntry = {
+    field: keyof NutritionalFields
+    value: number
+}
+
 export type Meal = {
     Name: string
     Recipes: Recipe[]
     Glycemic_load?: number
+    CustomAdditions?: CustomAdditionEntry[]
 } & NutritionalFields
 
 // Blog

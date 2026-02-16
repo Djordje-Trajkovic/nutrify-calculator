@@ -4,14 +4,8 @@ import { Ingredient, Meal, NutritionalFields } from "../../utils/types"
 type Props = {
     meals: Meal[]
     fields: (keyof NutritionalFields)[]
-}
-
-// Calculate dynamic column width based on number of fields
-const getFieldWidth = (numFields: number) => {
-    // Total available width approximately 500 points (A4 page minus margins)
-    const availableWidth = 400
-    const fieldWidth = Math.max(35, availableWidth / numFields)
-    return fieldWidth
+    planCalories: number
+    showMealKcalPercent?: boolean
 }
 
 const styles = StyleSheet.create({
@@ -19,6 +13,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         borderWidth: 1,
         borderColor: "#cbd5e0",
+        alignSelf: "flex-start",
     },
     row: {
         flexDirection: "row",
@@ -28,8 +23,8 @@ const styles = StyleSheet.create({
     cell: {
         borderRightWidth: 1,
         borderRightColor: "#cbd5e0",
-        padding: 3,
-        fontSize: 7,
+        padding: 4,
+        fontSize: 8,
         justifyContent: "center",
     },
     mealCell: {
@@ -47,13 +42,16 @@ const styles = StyleSheet.create({
     },
     headerText: {
         color: "#ffffff",
-        fontSize: 6,
+        fontSize: 7,
     },
     mealTotalRow: {
         backgroundColor: "#edf2f7",
     },
     overallTotalRow: {
         backgroundColor: "#e2e8f0",
+    },
+    customAdditionRow: {
+        backgroundColor: "#fef9c3",
     },
     totalCell: {
         fontWeight: "bold",
@@ -119,12 +117,31 @@ const formatFieldValue = (
     return ((value * amount) / 100).toFixed(2)
 }
 
-export default function PDFMealTable({ meals, fields }: Props) {
-    const fieldWidth = getFieldWidth(fields.length)
+/**
+ * Calculates the Meal Kcal % for an ingredient
+ */
+const calculateMealKcalPercent = (
+    ingredient: Ingredient,
+    planCalories: number,
+): string => {
+    const kcal = ingredient.Kcal ?? 0
+    const amount = ingredient.Amount ?? 0
+    const ingredientKcal = (kcal * amount) / 100
+    if (planCalories <= 0 || ingredientKcal <= 0) return "-"
+    return ((ingredientKcal / planCalories) * 100).toFixed(2) + "%"
+}
 
+// Fixed column widths
+const MEAL_COL_WIDTH = 55
+const RECIPE_COL_WIDTH = 55
+const INGREDIENT_COL_WIDTH = 65
+const FIELD_COL_WIDTH = 50
+
+export default function PDFMealTable({ meals, fields, planCalories, showMealKcalPercent }: Props) {
     // Calculate overall totals
     const overallTotals: Partial<Record<keyof NutritionalFields, number>> = {}
     fields.forEach((f) => (overallTotals[f] = 0))
+    let overallKcalForPercent = 0
 
     return (
         <View style={styles.tableContainer} wrap={false}>
@@ -134,7 +151,7 @@ export default function PDFMealTable({ meals, fields }: Props) {
                     style={[
                         styles.cell,
                         styles.headerCell,
-                        { width: 50, minWidth: 50 },
+                        { width: MEAL_COL_WIDTH, minWidth: MEAL_COL_WIDTH },
                     ]}
                 >
                     <Text style={styles.headerText}>Meal</Text>
@@ -143,7 +160,7 @@ export default function PDFMealTable({ meals, fields }: Props) {
                     style={[
                         styles.cell,
                         styles.headerCell,
-                        { width: 50, minWidth: 50 },
+                        { width: RECIPE_COL_WIDTH, minWidth: RECIPE_COL_WIDTH },
                     ]}
                 >
                     <Text style={styles.headerText}>Recipe</Text>
@@ -152,25 +169,45 @@ export default function PDFMealTable({ meals, fields }: Props) {
                     style={[
                         styles.cell,
                         styles.headerCell,
-                        { width: 60, minWidth: 60 },
+                        { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH },
                     ]}
                 >
                     <Text style={styles.headerText}>Ingredient</Text>
                 </View>
-                {fields.map((f) => (
-                    <View
-                        key={f}
-                        style={[
-                            styles.cell,
-                            styles.headerCell,
-                            { width: fieldWidth, minWidth: fieldWidth },
-                        ]}
-                    >
-                        <Text style={styles.headerText}>
-                            {formatFieldName(f)}
-                        </Text>
-                    </View>
-                ))}
+                {fields.map((f, idx) => {
+                    const cols = []
+                    cols.push(
+                        <View
+                            key={f}
+                            style={[
+                                styles.cell,
+                                styles.headerCell,
+                                { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                            ]}
+                        >
+                            <Text style={styles.headerText}>
+                                {formatFieldName(f)}
+                            </Text>
+                        </View>
+                    )
+                    if (showMealKcalPercent && idx === 0) {
+                        cols.push(
+                            <View
+                                key="meal-kcal-pct-header"
+                                style={[
+                                    styles.cell,
+                                    styles.headerCell,
+                                    { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                ]}
+                            >
+                                <Text style={styles.headerText}>
+                                    Meal Kcal %
+                                </Text>
+                            </View>
+                        )
+                    }
+                    return cols
+                })}
             </View>
 
             {/* Body */}
@@ -179,12 +216,12 @@ export default function PDFMealTable({ meals, fields }: Props) {
                     Record<keyof NutritionalFields, number>
                 > = {}
                 fields.forEach((f) => (mealTotals[f] = 0))
+                let mealKcalTotal = 0
 
                 const mealRows = meal.Recipes.flatMap(
                     (recipe, recipeIndex) => {
                         return recipe.Ingredients.map(
                             (ingredient, ingredientIndex) => {
-                                // Calculate contributions for this ingredient
                                 fields.forEach((field) => {
                                     const contribution =
                                         calculateFieldContribution(
@@ -199,6 +236,10 @@ export default function PDFMealTable({ meals, fields }: Props) {
                                         contribution
                                 })
 
+                                const ingredientKcal = ((ingredient.Kcal ?? 0) * (ingredient.Amount ?? 0)) / 100
+                                mealKcalTotal += ingredientKcal
+                                overallKcalForPercent += ingredientKcal
+
                                 const isFirstInMeal =
                                     recipeIndex === 0 && ingredientIndex === 0
                                 const isFirstInRecipe = ingredientIndex === 0
@@ -208,60 +249,34 @@ export default function PDFMealTable({ meals, fields }: Props) {
                                         style={styles.row}
                                         key={`${meal.Name}-${recipe.Name}-${ingredient?.Name}-${ingredientIndex}`}
                                     >
-                                        {/* Meal Cell */}
-                                        {isFirstInMeal && (
-                                            <View
-                                                style={[
-                                                    styles.cell,
-                                                    styles.mealCell,
-                                                    { width: 50, minWidth: 50 },
-                                                ]}
-                                            >
-                                                <Text>{meal.Name}</Text>
-                                            </View>
-                                        )}
-                                        {!isFirstInMeal && (
-                                            <View
-                                                style={[
-                                                    styles.cell,
-                                                    { width: 50, minWidth: 50 },
-                                                ]}
-                                            >
-                                                <Text></Text>
-                                            </View>
-                                        )}
-
-                                        {/* Recipe Cell */}
-                                        {isFirstInRecipe && (
-                                            <View
-                                                style={[
-                                                    styles.cell,
-                                                    styles.recipeCell,
-                                                    { width: 50, minWidth: 50 },
-                                                ]}
-                                            >
-                                                <Text>
-                                                    {recipe.Name ||
-                                                        "Unnamed Recipe"}
-                                                </Text>
-                                            </View>
-                                        )}
-                                        {!isFirstInRecipe && (
-                                            <View
-                                                style={[
-                                                    styles.cell,
-                                                    { width: 50, minWidth: 50 },
-                                                ]}
-                                            >
-                                                <Text></Text>
-                                            </View>
-                                        )}
-
-                                        {/* Ingredient Cell */}
                                         <View
                                             style={[
                                                 styles.cell,
-                                                { width: 60, minWidth: 60 },
+                                                isFirstInMeal ? styles.mealCell : {},
+                                                { width: MEAL_COL_WIDTH, minWidth: MEAL_COL_WIDTH },
+                                            ]}
+                                        >
+                                            <Text>{isFirstInMeal ? meal.Name : ""}</Text>
+                                        </View>
+
+                                        <View
+                                            style={[
+                                                styles.cell,
+                                                isFirstInRecipe ? styles.recipeCell : {},
+                                                { width: RECIPE_COL_WIDTH, minWidth: RECIPE_COL_WIDTH },
+                                            ]}
+                                        >
+                                            <Text>
+                                                {isFirstInRecipe
+                                                    ? (recipe.Name || "Unnamed Recipe")
+                                                    : ""}
+                                            </Text>
+                                        </View>
+
+                                        <View
+                                            style={[
+                                                styles.cell,
+                                                { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH },
                                             ]}
                                         >
                                             <Text>
@@ -269,26 +284,46 @@ export default function PDFMealTable({ meals, fields }: Props) {
                                             </Text>
                                         </View>
 
-                                        {/* Field Cells */}
-                                        {fields.map((f) => {
+                                        {fields.map((f, idx) => {
                                             const displayValue =
                                                 formatFieldValue(ingredient, f)
 
-                                            return (
+                                            const cols = []
+                                            cols.push(
                                                 <View
                                                     key={f}
                                                     style={[
                                                         styles.cell,
                                                         styles.rightAlign,
                                                         {
-                                                            width: fieldWidth,
-                                                            minWidth: fieldWidth,
+                                                            width: FIELD_COL_WIDTH,
+                                                            minWidth: FIELD_COL_WIDTH,
                                                         },
                                                     ]}
                                                 >
                                                     <Text>{displayValue}</Text>
                                                 </View>
                                             )
+                                            if (showMealKcalPercent && idx === 0) {
+                                                cols.push(
+                                                    <View
+                                                        key="meal-kcal-pct"
+                                                        style={[
+                                                            styles.cell,
+                                                            styles.rightAlign,
+                                                            {
+                                                                width: FIELD_COL_WIDTH,
+                                                                minWidth: FIELD_COL_WIDTH,
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <Text>
+                                                            {calculateMealKcalPercent(ingredient, planCalories)}
+                                                        </Text>
+                                                    </View>
+                                                )
+                                            }
+                                            return cols
                                         })}
                                     </View>
                                 )
@@ -296,6 +331,89 @@ export default function PDFMealTable({ meals, fields }: Props) {
                         )
                     },
                 )
+
+                // Custom Additions row
+                let customAdditionRow = null
+                if (meal.CustomAdditions && meal.CustomAdditions.length > 0) {
+                    meal.CustomAdditions.forEach((addition) => {
+                        const key = addition.field as keyof NutritionalFields
+                        if (fields.includes(key)) {
+                            mealTotals[key] = (mealTotals[key] ?? 0) + addition.value
+                            overallTotals[key] = (overallTotals[key] ?? 0) + addition.value
+                        }
+                    })
+
+                    const additionsLabel = meal.CustomAdditions.map(
+                        (a) => `${formatFieldName(a.field)}: ${a.value >= 0 ? "+" : ""}${a.value}`
+                    ).join(", ")
+
+                    customAdditionRow = (
+                        <View
+                            style={[styles.row, styles.customAdditionRow]}
+                            key={`${meal.Name}-custom`}
+                        >
+                            <View
+                                style={[
+                                    styles.cell,
+                                    { width: MEAL_COL_WIDTH, minWidth: MEAL_COL_WIDTH },
+                                ]}
+                            >
+                                <Text></Text>
+                            </View>
+                            <View
+                                style={[
+                                    styles.cell,
+                                    { width: RECIPE_COL_WIDTH, minWidth: RECIPE_COL_WIDTH },
+                                ]}
+                            >
+                                <Text>Custom</Text>
+                            </View>
+                            <View
+                                style={[
+                                    styles.cell,
+                                    { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH, fontSize: 7 },
+                                ]}
+                            >
+                                <Text>{additionsLabel}</Text>
+                            </View>
+                            {fields.map((f, idx) => {
+                                const addition = meal.CustomAdditions?.find((a) => a.field === f)
+                                const cols = []
+                                cols.push(
+                                    <View
+                                        key={`${meal.Name}-custom-${f}`}
+                                        style={[
+                                            styles.cell,
+                                            styles.rightAlign,
+                                            { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                        ]}
+                                    >
+                                        <Text>
+                                            {addition
+                                                ? `${addition.value >= 0 ? "+" : ""}${addition.value}`
+                                                : ""}
+                                        </Text>
+                                    </View>
+                                )
+                                if (showMealKcalPercent && idx === 0) {
+                                    cols.push(
+                                        <View
+                                            key={`${meal.Name}-custom-kcal-pct`}
+                                            style={[
+                                                styles.cell,
+                                                styles.rightAlign,
+                                                { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                            ]}
+                                        >
+                                            <Text></Text>
+                                        </View>
+                                    )
+                                }
+                                return cols
+                            })}
+                        </View>
+                    )
+                }
 
                 // Meal total row
                 const mealTotalRow = (
@@ -307,42 +425,65 @@ export default function PDFMealTable({ meals, fields }: Props) {
                             style={[
                                 styles.cell,
                                 styles.totalCell,
-                                { width: 50, minWidth: 50 },
+                                { width: MEAL_COL_WIDTH, minWidth: MEAL_COL_WIDTH },
                             ]}
                         >
                             <Text>Total ({meal.Name})</Text>
                         </View>
                         <View
-                            style={[styles.cell, { width: 50, minWidth: 50 }]}
+                            style={[styles.cell, { width: RECIPE_COL_WIDTH, minWidth: RECIPE_COL_WIDTH }]}
                         >
                             <Text></Text>
                         </View>
                         <View
-                            style={[styles.cell, { width: 60, minWidth: 60 }]}
+                            style={[styles.cell, { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH }]}
                         >
                             <Text></Text>
                         </View>
-                        {fields.map((f) => (
-                            <View
-                                key={`${meal.Name}-${f}-total`}
-                                style={[
-                                    styles.cell,
-                                    styles.totalCell,
-                                    styles.rightAlign,
-                                    { width: fieldWidth, minWidth: fieldWidth },
-                                ]}
-                            >
-                                <Text>
-                                    {isRawField(f)
-                                        ? (mealTotals[f] ?? 0)
-                                        : (mealTotals[f] ?? 0).toFixed(2)}
-                                </Text>
-                            </View>
-                        ))}
+                        {fields.map((f, idx) => {
+                            const cols = []
+                            cols.push(
+                                <View
+                                    key={`${meal.Name}-${f}-total`}
+                                    style={[
+                                        styles.cell,
+                                        styles.totalCell,
+                                        styles.rightAlign,
+                                        { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                    ]}
+                                >
+                                    <Text>
+                                        {isRawField(f)
+                                            ? (mealTotals[f] ?? 0)
+                                            : (mealTotals[f] ?? 0).toFixed(2)}
+                                    </Text>
+                                </View>
+                            )
+                            if (showMealKcalPercent && idx === 0) {
+                                cols.push(
+                                    <View
+                                        key={`${meal.Name}-kcal-pct-total`}
+                                        style={[
+                                            styles.cell,
+                                            styles.totalCell,
+                                            styles.rightAlign,
+                                            { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                        ]}
+                                    >
+                                        <Text>
+                                            {planCalories > 0 && mealKcalTotal > 0
+                                                ? ((mealKcalTotal / planCalories) * 100).toFixed(2) + "%"
+                                                : "-"}
+                                        </Text>
+                                    </View>
+                                )
+                            }
+                            return cols
+                        })}
                     </View>
                 )
 
-                return [mealRows, mealTotalRow]
+                return [mealRows, customAdditionRow, mealTotalRow]
             })}
 
             {/* Overall Total Row */}
@@ -351,34 +492,57 @@ export default function PDFMealTable({ meals, fields }: Props) {
                     style={[
                         styles.cell,
                         styles.totalCell,
-                        { width: 50, minWidth: 50 },
+                        { width: MEAL_COL_WIDTH, minWidth: MEAL_COL_WIDTH },
                     ]}
                 >
                     <Text>Total (All Meals)</Text>
                 </View>
-                <View style={[styles.cell, { width: 50, minWidth: 50 }]}>
+                <View style={[styles.cell, { width: RECIPE_COL_WIDTH, minWidth: RECIPE_COL_WIDTH }]}>
                     <Text></Text>
                 </View>
-                <View style={[styles.cell, { width: 60, minWidth: 60 }]}>
+                <View style={[styles.cell, { width: INGREDIENT_COL_WIDTH, minWidth: INGREDIENT_COL_WIDTH }]}>
                     <Text></Text>
                 </View>
-                {fields.map((f) => (
-                    <View
-                        key={`overall-${f}`}
-                        style={[
-                            styles.cell,
-                            styles.totalCell,
-                            styles.rightAlign,
-                            { width: fieldWidth, minWidth: fieldWidth },
-                        ]}
-                    >
-                        <Text>
-                            {isRawField(f)
-                                ? (overallTotals[f] ?? 0)
-                                : (overallTotals[f] ?? 0).toFixed(2)}
-                        </Text>
-                    </View>
-                ))}
+                {fields.map((f, idx) => {
+                    const cols = []
+                    cols.push(
+                        <View
+                            key={`overall-${f}`}
+                            style={[
+                                styles.cell,
+                                styles.totalCell,
+                                styles.rightAlign,
+                                { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                            ]}
+                        >
+                            <Text>
+                                {isRawField(f)
+                                    ? (overallTotals[f] ?? 0)
+                                    : (overallTotals[f] ?? 0).toFixed(2)}
+                            </Text>
+                        </View>
+                    )
+                    if (showMealKcalPercent && idx === 0) {
+                        cols.push(
+                            <View
+                                key="overall-kcal-pct"
+                                style={[
+                                    styles.cell,
+                                    styles.totalCell,
+                                    styles.rightAlign,
+                                    { width: FIELD_COL_WIDTH, minWidth: FIELD_COL_WIDTH },
+                                ]}
+                            >
+                                <Text>
+                                    {planCalories > 0 && overallKcalForPercent > 0
+                                        ? ((overallKcalForPercent / planCalories) * 100).toFixed(2) + "%"
+                                        : "-"}
+                                </Text>
+                            </View>
+                        )
+                    }
+                    return cols
+                })}
             </View>
         </View>
     )

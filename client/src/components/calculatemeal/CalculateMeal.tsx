@@ -1,11 +1,13 @@
 "use client"
-import { Ingredient, Meal, Recipe } from "@/utils/types"
+import { CustomAdditionEntry, Ingredient, Meal, Recipe } from "@/utils/types"
 import { Autocomplete, Button, Stack, TextField } from "@mui/material"
 import React, { useState } from "react"
 import Cookies from "js-cookie"
 import { Check, Minus, PencilSimple, Plus } from "@phosphor-icons/react"
-import { searchRecipesByName } from "@/utils/api"
+import { searchRecipesByName, saveMealPlan } from "@/utils/api"
 import PDFPreviewModal from "./PDFPreviewModal"
+import CustomAdditionModal from "./CustomAdditionModal"
+import { toast } from "react-toastify"
 
 const CalculateMeal: React.FC = () => {
     const token = Cookies.get("jwtNutrifyS")
@@ -98,6 +100,7 @@ const CalculateMeal: React.FC = () => {
     const [mealPlanName, setMealPlanName] = useState("")
     const [planCalories, setPlanCalories] = useState(1800)
     const [viewReport, setViewReport] = useState(false)
+    const [customModalOpen, setCustomModalOpen] = useState<number | null>(null)
 
     const handleIngredientSearch = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -242,6 +245,39 @@ const CalculateMeal: React.FC = () => {
             Kcal: 0,
         })
         setMeals(newMeals)
+    }
+    const handleAddCustomItem = (mealIndex: number) => {
+        setCustomModalOpen(mealIndex)
+    }
+    const handleSaveCustomAdditions = (
+        mealIndex: number,
+        additions: CustomAdditionEntry[],
+    ) => {
+        setMeals((prev) => {
+            const newMeals = [...prev]
+            newMeals[mealIndex] = calculateMealNutrition({
+                ...newMeals[mealIndex],
+                CustomAdditions: additions,
+            })
+            return newMeals
+        })
+    }
+    const handleSaveMealPlan = async () => {
+        if (!mealPlanName.trim()) {
+            toast.error("Please enter a meal plan name")
+            return
+        }
+        if (!token) {
+            toast.error("You must be logged in to save a meal plan")
+            return
+        }
+        try {
+            await saveMealPlan(mealPlanName, planCalories, meals, token)
+            toast.success("Meal plan saved successfully!")
+        } catch (error) {
+            console.error("Error saving meal plan:", error)
+            toast.error("Failed to save meal plan. Please try again.")
+        }
     }
     const handleRemoveIngredient = (
         mealIndex: number,
@@ -449,6 +485,16 @@ const CalculateMeal: React.FC = () => {
             nutritionTotals.Glycemic_index =
                 weightedGlycemicIndex / totalCarbsForGlycemicIndex
         }
+
+        // Apply custom additions directly (no factor calculation)
+        if (meal.CustomAdditions) {
+            for (const addition of meal.CustomAdditions) {
+                const key = addition.field
+                nutritionTotals[key] =
+                    ((nutritionTotals[key] ?? 0) as number) + addition.value
+            }
+        }
+
         return {
             ...meal,
             ...nutritionTotals,
@@ -462,7 +508,21 @@ const CalculateMeal: React.FC = () => {
                 onClose={() => setViewReport(false)}
                 meals={meals}
                 mealPlanName={mealPlanName}
+                planCalories={planCalories}
             />
+            {customModalOpen !== null && (
+                <CustomAdditionModal
+                    open={true}
+                    onClose={() => setCustomModalOpen(null)}
+                    existingAdditions={
+                        meals[customModalOpen]?.CustomAdditions ?? []
+                    }
+                    onSave={(additions) => {
+                        handleSaveCustomAdditions(customModalOpen, additions)
+                        setCustomModalOpen(null)
+                    }}
+                />
+            )}
             <div className="w-full pb-10">
                 <div className="flex justify-between pb-10">
                     <h1 className="text-DarkGreen font-Poppins text-4xl font-semibold">
@@ -506,9 +566,7 @@ const CalculateMeal: React.FC = () => {
                         <Button
                             variant="contained"
                             className="bg-LightGreen! hover:bg-LightGreen/80! w-full"
-                            onClick={() => {
-                                console.log("Save meal plan")
-                            }}
+                            onClick={handleSaveMealPlan}
                         >
                             Save Meal Plan
                         </Button>
@@ -672,6 +730,17 @@ const CalculateMeal: React.FC = () => {
                                                             }
                                                         >
                                                             Add Recipe
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            className="bg-Cream! hover:bg-Cream/80! text-DarkGreen! normal-case!"
+                                                            onClick={() =>
+                                                                handleAddCustomItem(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        >
+                                                            Add Custom Item
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -1069,6 +1138,47 @@ const CalculateMeal: React.FC = () => {
                                                 </div>
                                             ),
                                         )}
+                                        {meal.CustomAdditions &&
+                                            meal.CustomAdditions.length >
+                                                0 && (
+                                                <div className="mt-2 rounded-lg border border-slate-200 p-3">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-DarkGreen font-Poppins text-sm font-semibold">
+                                                            Custom Additions
+                                                        </span>
+                                                        <Button
+                                                            size="small"
+                                                            className="text-DarkGreen! normal-case! text-xs!"
+                                                            onClick={() =>
+                                                                setCustomModalOpen(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    </div>
+                                                    {meal.CustomAdditions.map(
+                                                        (entry, addIdx) => (
+                                                            <div
+                                                                key={addIdx}
+                                                                className="flex items-center justify-between py-1 text-sm"
+                                                            >
+                                                                <span className="text-gray-600">
+                                                                    {entry.field.replace(
+                                                                        /_/g,
+                                                                        " ",
+                                                                    )}
+                                                                </span>
+                                                                <span className="font-medium text-DarkGreen">
+                                                                    {entry.value >= 0 ? "+" : ""}
+                                                                    {entry.value}
+                                                                </span>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
                                         <h5 className="text-DarkGreen font-Poppins flex w-full justify-end text-xl font-medium">
                                             Total Meal Calories:{" "}
                                             {meal.Kcal?.toFixed(2)}
@@ -1220,6 +1330,53 @@ const CalculateMeal: React.FC = () => {
                                                 </div>
                                             ),
                                         )}
+                                        {/* Custom Additions row in the table */}
+                                        {meal.CustomAdditions &&
+                                            meal.CustomAdditions.length > 0 && (
+                                                <div className="flex h-full w-full">
+                                                    <div className="text-DarkGreen flex h-full w-full max-w-1/3 items-center border border-t-0 border-r-0 border-slate-300 bg-yellow-50">
+                                                        <span className="text-DarkGreen font-Poppins w-full max-w-[120px] px-5 italic text-sm">
+                                                            Custom
+                                                        </span>
+                                                        <div className="flex h-full w-full flex-col">
+                                                            <div className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-yellow-50 px-4 text-xs">
+                                                                {meal.CustomAdditions.map(
+                                                                    (entry, i) => (
+                                                                        <span key={i} className="mr-2">
+                                                                            {entry.field.replace(/_/g, " ")}:{" "}
+                                                                            {entry.value >= 0 ? "+" : ""}{entry.value}
+                                                                        </span>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex w-full flex-col items-center border border-t-0 border-r-0 border-l-0 border-slate-300">
+                                                        <div className="text-DarkGreen flex h-full w-full items-center border border-t-0 border-slate-300 bg-yellow-50 px-4">
+                                                            <span className="w-full text-center">-</span>
+                                                            <span className="w-full text-center">-</span>
+                                                            <span className="w-full text-center">
+                                                                {(() => {
+                                                                    const kcalAddition = meal.CustomAdditions?.find(a => a.field === "Kcal")
+                                                                    if (kcalAddition && planCalories > 0) {
+                                                                        return ((kcalAddition.value / planCalories) * 100).toFixed(2) + "%"
+                                                                    }
+                                                                    return "-"
+                                                                })()}
+                                                            </span>
+                                                            <span className="w-full text-center">
+                                                                {(() => {
+                                                                    const kcalAddition = meal.CustomAdditions?.find(a => a.field === "Kcal")
+                                                                    if (kcalAddition) {
+                                                                        return (kcalAddition.value >= 0 ? "+" : "") + kcalAddition.value
+                                                                    }
+                                                                    return "-"
+                                                                })()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                     </div>
                                 </div>
                             </div>
